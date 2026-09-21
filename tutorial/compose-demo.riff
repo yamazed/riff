@@ -1,0 +1,46 @@
+# A tiny mock API for the Compose tour (tutorial/build_compose_video.py) and
+# for anyone who wants to follow the video offline:
+#
+#   riff run -s tutorial/compose-demo.riff
+#
+# Every request to demo-api.riff.local is answered here by a rule, so nothing
+# leaves the machine. The shape mirrors a typical enterprise service: an OAuth
+# token endpoint, then a small resource API that wants a bearer token.
+
+# ── Log in ──────────────────────────────────────────────────────────────
+on request where host == "demo-api.riff.local" and path == "/connect/token" and method == "POST" {
+    respond 200 "{\"access_token\": \"eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJhZGFAZXhhbXBsZS5jb20iLCJzZXNzaW9uX2lkIjoiYTlmM2MyZDUifQ.demo\", \"token_type\": \"Bearer\", \"expires_in\": 3600, \"scope\": \"openid email product_user\"}" as json
+    stop
+}
+
+# ── Everything under /api needs the token ──────────────────────────────
+on request where host == "demo-api.riff.local" and path starts with "/api/" and not ("authorization" in header) {
+    respond 401 "{\"error\": \"invalid_token\", \"error_description\": \"The request has no bearer token. Log in at /connect/token and send Authorization: Bearer <token>.\"}" as json
+    stop
+}
+
+on request where host == "demo-api.riff.local" and path == "/api/users" and method == "GET" {
+    delay 120ms
+    respond 200 "{\"totalResults\": 3, \"itemsPerPage\": 25, \"startIndex\": 1, \"Resources\": [{\"id\": \"1001\", \"userName\": \"ada@example.com\", \"displayName\": \"Ada Lovelace\", \"active\": true, \"title\": \"Product Manager\"}, {\"id\": \"1002\", \"userName\": \"grace@example.com\", \"displayName\": \"Grace Hopper\", \"active\": true, \"title\": \"QA Engineer\"}, {\"id\": \"1003\", \"userName\": \"alan@example.com\", \"displayName\": \"Alan Turing\", \"active\": false, \"title\": \"Developer\"}]}" as json
+    stop
+}
+
+on request where host == "demo-api.riff.local" and path ~ "^/api/users/[0-9]+$" and method == "GET" {
+    delay 90ms
+    respond 200 "{\"id\": \"1001\", \"userName\": \"ada@example.com\", \"displayName\": \"Ada Lovelace\", \"active\": true, \"title\": \"Product Manager\", \"emails\": [{\"value\": \"ada@example.com\", \"primary\": true}], \"meta\": {\"created\": \"2024-03-11T09:14:00Z\", \"lastModified\": \"2026-09-01T16:02:13Z\"}}" as json
+    stop
+}
+
+on request where host == "demo-api.riff.local" and path == "/api/users" and method == "POST" {
+    delay 150ms
+    respond 201 "{\"id\": \"1004\", \"userName\": \"new.user@example.com\", \"displayName\": \"New User\", \"active\": true, \"meta\": {\"created\": \"2026-09-10T10:00:00Z\"}}" as json
+    stop
+}
+
+on request where host == "demo-api.riff.local" {
+    respond 404 "{\"error\": \"not_found\", \"path\": \"" + path + "\"}" as json
+    stop
+}
+
+# Make problems visible in the traffic list, as the everyday rules do.
+on response where status >= 400 { tag "error" }

@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>riff</title>
+<link rel="stylesheet" href="/app.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>%F0%9F%8E%BB</text></svg>">
+</head>
+<body>
+
+<header class="bar">
+  <div class="brand">
+    <span class="brand-mark" aria-hidden="true"></span>
+    <span class="brand-name">riff</span>
+  </div>
+
+  <div class="filter-wrap">
+    <input id="filter" type="search" spellcheck="false" autocomplete="off"
+           placeholder="Filter &mdash; text, or status:5xx  method:POST  host:api  tag:slow  !static">
+    <kbd class="filter-hint">/</kbd>
+  </div>
+
+  <div class="bar-actions">
+    <button id="btn-record" class="btn btn-record" title="Pause or resume capture (space)">
+      <span class="rec-dot"></span><span id="record-label">Recording</span>
+    </button>
+    <button id="btn-clear" class="btn" title="Clear the buffer (c)">Clear</button>
+    <div class="menu-wrap">
+      <button id="btn-export" class="btn" title="Export the selected flows, or everything shown (e)"
+              aria-haspopup="menu" aria-expanded="false">Export</button>
+      <div class="menu" id="export-menu" role="menu" hidden>
+        <button class="menu-item" role="menuitem" data-format="riff">riff JSON<small>Lossless. Reopens in riff.</small></button>
+        <button class="menu-item" role="menuitem" data-format="har">HAR 1.2<small>Chrome DevTools and most HTTP tools.</small></button>
+      </div>
+    </div>
+    <button id="btn-import" class="btn" title="Import a riff export or a HAR file (i)">Import</button>
+    <button id="btn-findings" class="btn" title="Security findings from the passive scanner (f)">
+      <span class="shield">&#128737;</span> Findings<span id="findings-badge" class="badge" hidden>0</span>
+    </button>
+    <input id="import-file" type="file" accept=".json,.har,application/json" multiple hidden>
+    <button id="btn-script" class="btn" title="Edit the rule script (s)">Rules</button>
+    <button id="btn-compose" class="btn" title="Compose a request (n)">Compose</button>
+    <button id="btn-setup" class="btn btn-ghost" title="Setup &amp; certificate">Setup</button>
+    <button id="btn-theme" class="btn btn-ghost btn-theme" title="Switch between light and dark">
+      <span class="theme-dark">&#9681;</span><span class="theme-light">&#9680;</span>
+    </button>
+  </div>
+</header>
+
+<main class="split" id="split">
+  <section class="list-pane">
+    <div class="table-head">
+      <span class="col-check"><input type="checkbox" id="check-all" title="Select everything shown"></span>
+      <span class="col-id">#</span>
+      <span class="col-method">Method</span>
+      <span class="col-status">Status</span>
+      <span class="col-host">Host</span>
+      <span class="col-path">Path</span>
+      <span class="col-type">Type</span>
+      <span class="col-size">Size</span>
+      <span class="col-time">Time</span>
+    </div>
+    <div class="table-body" id="rows" tabindex="0">
+      <div class="empty" id="empty">
+        <p class="empty-title">No traffic yet</p>
+        <p class="empty-sub">Point a client at the proxy and requests will stream in here.</p>
+        <button class="btn btn-primary" id="empty-setup">Show me how</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="gutter" id="gutter" role="separator" aria-orientation="horizontal" tabindex="0"></div>
+
+  <section class="detail-pane" id="detail">
+    <div class="detail-placeholder" id="detail-placeholder">
+      <p>Select a flow to inspect it.</p>
+    </div>
+
+    <div class="detail-body" id="detail-body" hidden>
+      <div class="detail-head">
+        <div class="detail-title">
+          <span class="pill" id="d-method">GET</span>
+          <span class="pill" id="d-status">200</span>
+          <span class="d-url" id="d-url"></span>
+        </div>
+        <div class="detail-tools">
+          <button class="btn btn-sm" id="btn-replay" title="Send this request again">Replay</button>
+          <button class="btn btn-sm" id="btn-edit-replay" title="Open in the composer">Edit &amp; send</button>
+          <button class="btn btn-sm btn-ghost" id="btn-copy-curl" title="Copy as curl">Copy curl</button>
+        </div>
+      </div>
+
+      <nav class="tabs" id="tabs">
+        <button class="tab is-active" data-tab="request">Request</button>
+        <button class="tab" data-tab="response">Response</button>
+        <button class="tab" data-tab="timing">Timing</button>
+        <button class="tab" data-tab="raw">Raw</button>
+      </nav>
+
+      <div class="tab-panels">
+        <div class="panel is-active" data-panel="request"></div>
+        <div class="panel" data-panel="response"></div>
+        <div class="panel" data-panel="timing"></div>
+        <div class="panel" data-panel="raw"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="status">
+  <span id="stat-count">0 flows</span>
+  <span class="sep"></span>
+  <span id="stat-bytes">0 B</span>
+  <span class="sep"></span>
+  <span id="stat-tunnels">0 tunnels</span>
+  <span class="sep" id="stat-selected-sep" hidden></span>
+  <span id="stat-selected" class="stat-selected" hidden>0 selected</span>
+  <span class="grow"></span>
+  <span id="stat-script"></span>
+  <span class="sep"></span>
+  <span id="stat-conn" class="conn"><i class="dot"></i>connecting</span>
+</footer>
+
+<!-- ── Rules drawer ─────────────────────────────────────────────── -->
+<aside class="drawer" id="drawer-script" hidden>
+  <div class="drawer-head">
+    <h2>Rules</h2>
+    <span class="drawer-path" id="script-path"></span>
+    <span class="grow"></span>
+    <button class="btn btn-sm" id="btn-script-check">Check</button>
+    <button class="btn btn-sm btn-primary" id="btn-script-save">Save &amp; apply</button>
+    <button class="btn btn-sm btn-ghost drawer-close" data-close="drawer-script">Close</button>
+  </div>
+  <div class="drawer-body">
+    <textarea id="script-source" spellcheck="false" autocomplete="off" autocapitalize="off"></textarea>
+    <div class="script-status" id="script-status"></div>
+    <details class="cheatsheet">
+      <summary>Language cheat sheet</summary>
+      <pre id="cheatsheet"></pre>
+    </details>
+  </div>
+</aside>
+
+<!-- ── Findings drawer ──────────────────────────────────────────── -->
+<aside class="drawer" id="drawer-findings" hidden>
+  <div class="drawer-head">
+    <h2>Security findings</h2>
+    <span class="drawer-path" id="findings-summary"></span>
+    <span class="grow"></span>
+    <button class="btn btn-sm" id="btn-findings-rescan" title="Re-run the checks over every buffered flow">Rescan</button>
+    <button class="btn btn-sm" id="btn-findings-clear" title="Clear the findings list">Clear</button>
+    <button class="btn btn-sm btn-ghost drawer-close" data-close="drawer-findings">Close</button>
+  </div>
+  <div class="drawer-body">
+    <p class="findings-note">
+      Passive checks run automatically and send nothing. The
+      <strong>active scan</strong> below sends attack payloads, so it only runs against hosts you put in scope
+      and confirm you are authorised to test.
+    </p>
+    <div class="scan-bar">
+      <input id="scan-hosts" type="text" spellcheck="false" autocomplete="off" list="scan-host-options"
+             placeholder="In-scope host(s), comma-separated — e.g. api.example.com, *.internal.test">
+      <datalist id="scan-host-options"></datalist>
+      <label class="scan-opt" title="Also run the slow time-based SQL injection check">
+        <input type="checkbox" id="scan-time"> time-based
+      </label>
+      <label class="scan-opt" title="Out-of-band checks via a loopback collaborator (blind SSRF/injection). Local targets only from the UI.">
+        <input type="checkbox" id="scan-oob"> out-of-band
+      </label>
+      <button class="btn btn-sm btn-primary" id="btn-scan-start" title="Send active probes to the hosts in scope">Active scan</button>
+      <button class="btn btn-sm" id="btn-scan-cancel" hidden>Cancel</button>
+    </div>
+    <div class="scan-progress" id="scan-progress" hidden>
+      <div class="scan-progress-bar"><span id="scan-progress-fill"></span></div>
+      <span class="scan-progress-text" id="scan-progress-text"></span>
+    </div>
+    <div class="findings-list" id="findings-list"></div>
+    <div class="findings-empty" id="findings-empty">No findings yet. Browse some traffic and they will appear here.</div>
+  </div>
+</aside>
+
+<!-- ── Composer drawer ──────────────────────────────────────────── -->
+<aside class="drawer drawer-wide" id="drawer-compose" hidden>
+  <div class="drawer-head">
+    <h2>Compose</h2>
+    <select id="env-select" class="sel-env" title="Environment: which values {{variables}} take"><option value="">No environment</option></select>
+    <button class="btn btn-sm btn-ghost" id="btn-env-edit" title="Add or edit environments and personal values">Environments</button>
+    <span class="grow"></span>
+    <label class="check"><input type="checkbox" id="compose-rules" checked> apply rules</label>
+    <button class="btn btn-sm btn-ghost drawer-close" data-close="drawer-compose">Close</button>
+  </div>
+  <div class="compose-layout">
+    <nav class="compose-rail" aria-label="Collections">
+      <div class="rail-head">
+        <span class="rail-title">Collections</span>
+        <span class="grow"></span>
+        <button class="btn btn-xs" id="btn-collection-new" title="New collection">New</button>
+        <button class="btn btn-xs" id="btn-collection-import" title="Import a v2.1 collection, a riff collection or a HAR file">Import</button>
+        <input id="collection-file" type="file" accept=".json,.har,application/json" multiple hidden>
+      </div>
+      <div class="rail-filter"><input id="rail-filter" type="search" spellcheck="false" placeholder="Filter requests" title="Filter by name or URL"></div>
+      <div id="collection-tree" class="collection-tree"></div>
+      <div class="menu" id="collection-menu" role="menu" hidden>
+        <button class="menu-item" role="menuitem" data-action="new-request">New request here</button>
+        <button class="menu-item" role="menuitem" data-action="new-folder">New folder</button>
+        <button class="menu-item" role="menuitem" data-action="rename">Rename</button>
+        <button class="menu-item" role="menuitem" data-action="export-v2">Export as Collection v2.1<small>Portable API-client format</small></button>
+        <button class="menu-item" role="menuitem" data-action="export-riff">Export riff JSON</button>
+        <button class="menu-item menu-danger" role="menuitem" data-action="delete">Delete collection</button>
+      </div>
+      <div class="menu" id="folder-menu" role="menu" hidden>
+        <button class="menu-item" role="menuitem" data-action="new-request">New request here</button>
+        <button class="menu-item" role="menuitem" data-action="new-folder">New subfolder</button>
+        <button class="menu-item" role="menuitem" data-action="rename">Rename</button>
+        <button class="menu-item menu-danger" role="menuitem" data-action="delete">Delete folder</button>
+      </div>
+    </nav>
+    <section class="compose-main">
+      <div class="req-title">
+        <button class="btn btn-xs btn-ghost" id="btn-req-new" title="Start a blank request">+ New</button>
+        <input id="req-name" type="text" spellcheck="false" placeholder="Untitled request">
+        <span class="muted" id="req-where">unsaved</span>
+        <span class="grow"></span>
+        <button class="btn btn-sm" id="btn-req-save">Save to…</button>
+        <button class="btn btn-sm btn-ghost" id="btn-req-saveas" title="Save a copy into another collection">Save as…</button>
+        <button class="btn btn-sm btn-ghost" id="btn-req-delete" hidden>Delete</button>
+      </div>
+      <div class="save-dialog" id="save-dialog" hidden>
+        <label>Collection <select id="save-collection"></select></label>
+        <input id="save-new-name" type="text" placeholder="new collection name" hidden>
+        <label>Folder <select id="save-folder"></select></label>
+        <input id="save-new-folder" type="text" placeholder="new folder name" hidden>
+        <label>Request name <input id="save-request-name" type="text" spellcheck="false"></label>
+        <button class="btn btn-sm btn-primary" id="btn-save-confirm">Save</button>
+        <button class="btn btn-sm btn-ghost" id="btn-save-cancel">Cancel</button>
+      </div>
+      <div class="compose-line">
+        <select id="compose-method">
+          <option>GET</option><option>POST</option><option>PUT</option><option>PATCH</option>
+          <option>DELETE</option><option>HEAD</option><option>OPTIONS</option>
+        </select>
+        <input id="compose-url" type="text" spellcheck="false" placeholder="{{baseUrl}}/v1/things  — variables come from the environment">
+        <button class="btn btn-primary" id="btn-compose-send" title="Send (Ctrl+Enter)">Send</button>
+      </div>
+      <div class="tabs req-tabs" id="req-tabs">
+        <button class="tab is-active" data-tab="params">Params <span class="count"></span></button>
+        <button class="tab" data-tab="headers">Headers <span class="count"></span></button>
+        <button class="tab" data-tab="body">Body <span class="count"></span></button>
+        <button class="tab" data-tab="auth">Auth <span class="count"></span></button>
+        <button class="tab" data-tab="capture">Capture <span class="count"></span></button>
+      </div>
+      <div class="req-panels" id="req-panels">
+        <div data-panel="params"><div class="kv-grid" id="kv-params"></div>
+          <p class="hint">Added to the URL's query string. Untick a row to leave it out.</p></div>
+        <div data-panel="headers" hidden><div class="kv-grid" id="kv-headers"></div>
+          <p class="hint">Host and Content-Length are set by riff. Content-Type is filled in for JSON and form bodies unless you set one.</p></div>
+        <div data-panel="body" hidden>
+          <div class="body-mode">
+            <label><input type="radio" name="body-mode" value="none" checked> none</label>
+            <label><input type="radio" name="body-mode" value="json"> JSON</label>
+            <label><input type="radio" name="body-mode" value="text"> text</label>
+            <label><input type="radio" name="body-mode" value="form"> form</label>
+          </div>
+          <p class="hint" id="body-none">This request sends no body.</p>
+          <textarea id="compose-body" spellcheck="false" rows="10" hidden placeholder='{"q": "{{term}}"}'></textarea>
+          <div class="kv-grid" id="kv-form" hidden></div>
+        </div>
+        <div data-panel="auth" hidden>
+          <div class="auth-line">
+            <label>Type
+              <select id="auth-type">
+                <option value="inherit">inherit from collection</option>
+                <option value="none">none</option>
+                <option value="bearer">bearer token</option>
+                <option value="basic">basic</option>
+                <option value="apikey">API key</option>
+              </select>
+            </label>
+          </div>
+          <div id="auth-fields">
+            <div data-auth="bearer" hidden><label>Token <input id="auth-token" type="text" spellcheck="false" placeholder="{{token}}"></label></div>
+            <div data-auth="basic" hidden>
+              <label>Username <input id="auth-username" type="text" spellcheck="false"></label>
+              <label>Password <input id="auth-password" type="text" spellcheck="false" placeholder="{{password}}"></label>
+            </div>
+            <div data-auth="apikey" hidden>
+              <label>Key <input id="auth-key" type="text" spellcheck="false" placeholder="X-Api-Key"></label>
+              <label>Value <input id="auth-value" type="text" spellcheck="false" placeholder="{{apiKey}}"></label>
+              <label>In <select id="auth-in"><option value="header">header</option><option value="query">query</option></select></label>
+            </div>
+            <p class="hint">An explicit Authorization header wins over this. Use {{variables}} so tokens stay in your personal values, not in the shared collection.</p>
+          </div>
+        </div>
+        <div data-panel="capture" hidden>
+          <div class="kv-grid kv-capture" id="kv-capture"></div>
+          <p class="hint">After a successful send, pull values out of the response into your personal values for the current environment. A json path looks like <code>access_token</code> or <code>data.items[0].id</code>; header takes a header name; status needs no path.</p>
+        </div>
+      </div>
+      <div class="script-status" id="compose-status"></div>
+      <div class="resp" id="resp" hidden>
+        <div class="resp-head">
+          <span class="resp-status" id="resp-status"></span>
+          <span class="resp-reason" id="resp-reason"></span>
+          <span class="muted" id="resp-time"></span>
+          <span class="muted" id="resp-size"></span>
+          <span class="grow"></span>
+          <button class="btn btn-xs btn-ghost" id="resp-open" title="Open this flow in the traffic list">flow</button>
+        </div>
+        <div class="tabs" id="resp-tabs">
+          <button class="tab is-active" data-tab="body">Body</button>
+          <button class="tab" data-tab="headers">Headers</button>
+        </div>
+        <div class="resp-pane" id="resp-body"></div>
+        <div class="resp-pane" id="resp-headers" hidden></div>
+      </div>
+    </section>
+    <section class="env-editor" id="env-editor" hidden>
+      <div class="env-head">
+        <strong>Environments</strong>
+        <select id="env-edit-select"></select>
+        <input id="env-new-name" type="text" spellcheck="false" placeholder="name, e.g. dvm" hidden>
+        <span class="grow"></span>
+        <button class="btn btn-sm btn-primary" id="btn-env-save">Save</button>
+        <button class="btn btn-sm btn-ghost" id="btn-env-delete">Delete</button>
+        <button class="btn btn-sm btn-ghost" id="btn-env-close">Close</button>
+      </div>
+      <div class="env-cols">
+        <div>
+          <div class="kv-title">Shared values <span class="muted">saved next to rules.riff, safe to share</span></div>
+          <div class="kv-grid" id="env-shared"></div>
+        </div>
+        <div>
+          <div class="kv-title">Personal values <span class="muted">this machine only, override shared</span></div>
+          <div class="kv-grid" id="env-personal"></div>
+        </div>
+      </div>
+      <p class="hint">Use them as <code>{{name}}</code> anywhere in a request. Personal values are where tokens belong; captures land here too.</p>
+    </section>
+  </div>
+</aside>
+
+<!-- ── Setup drawer ─────────────────────────────────────────────── -->
+<aside class="drawer" id="drawer-setup" hidden>
+  <div class="drawer-head">
+    <h2>Setup</h2>
+    <span class="grow"></span>
+    <button class="btn btn-sm btn-ghost drawer-close" data-close="drawer-setup">Close</button>
+  </div>
+  <div class="drawer-body setup" id="setup-body"></div>
+</aside>
+
+<div class="toast-stack" id="toasts"></div>
+
+<script src="/compose.js"></script>
+<script src="/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,46 @@
+# A safe starting point: decrypt only what you own, redact the obvious
+# secrets, and flag anything slow or broken.
+#
+#   riff run -s examples/starter.riff
+
+# ── What gets decrypted ────────────────────────────────────────────────
+# With at least one `decrypt` present, everything else is tunnelled
+# opaquely — your bank and your IdP stay unreadable.
+decrypt "localhost"
+decrypt "127.0.0.1"
+decrypt "*.example.com"
+
+# Explicit opt-outs win regardless of order they are matched in.
+passthru "login.microsoftonline.com"
+passthru "*.okta.com"
+
+
+# ── Keep credentials out of the capture buffer ─────────────────────────
+on request {
+    redact header "authorization"
+    redact header "proxy-authorization"
+    redact header "x-api-key"
+    redact cookie "session"
+}
+
+on response {
+    redact header "set-cookie"
+}
+
+
+# ── Make problems visible ──────────────────────────────────────────────
+on response where status >= 500 {
+    tag "server-error"
+    count "5xx"
+    log "5xx from " + host + path
+}
+
+on response where status == 401 or status == 403 {
+    tag "auth"
+    count "denied"
+}
+
+on response where duration > 2000 {
+    tag "slow"
+    log "slow: " + path + " took " + duration + "ms"
+}

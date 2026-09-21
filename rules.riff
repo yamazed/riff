@@ -1,0 +1,67 @@
+# Work on a handful of hosts and ignore the rest of the internet.
+# This is the "only show me my own services" setup.
+#
+#   riff run -s examples/allowlist.riff
+
+# ── What gets decrypted ────────────────────────────────────────────────
+# Because at least one `decrypt` is present, every other host is tunnelled
+# opaquely. Unlisted traffic isn't merely hidden from the list — it is never
+# decrypted at all, so it stays unreadable to riff.
+#
+# A bare name matches that host and its subdomains, so "example.com" would
+# also cover api.example.com. The globs below are the explicit form.
+decrypt "localhost"
+decrypt "127.0.0.1"
+decrypt "*.example.com"
+decrypt "*.test"
+decrypt "*.internal"
+
+# Never decrypt sign-in traffic, even when it sits under a host you listed.
+# Listed first because the first matching directive wins.
+passthru "login.microsoftonline.com"
+passthru "*.okta.com"
+
+
+# ── What shows up in the list ──────────────────────────────────────────
+# `capture` is the display filter: naming any host makes it an allowlist.
+# Traffic to everything else still flows normally, it just isn't recorded.
+# Put `ignore` lines before broader `capture` lines — first match wins.
+ignore  "telemetry.example.com"
+ignore  "*.events.data.microsoft.com"
+
+capture "localhost"
+capture "127.0.0.1"
+capture "*.example.com"
+capture "*.test"
+capture "*.internal"
+
+
+# ── Nothing is masked by default ───────────────────────────────────────
+# riff shows headers, cookies and bodies exactly as sent. If you want a
+# value hidden before it reaches the capture buffer, a rule like this
+# does it (see examples/starter.riff for a fuller set):
+#
+#   on request  { redact header "authorization" }
+#   on response { redact header "set-cookie" }
+
+
+# ── Make problems visible ──────────────────────────────────────────────
+on response where status >= 500 {
+    tag "server-error"
+    count "5xx"
+    log "5xx from " + host + path
+}
+
+on response where status == 401 or status == 403 {
+    tag "auth"
+    count "denied"
+}
+
+on response where duration > 2000 {
+    tag "slow"
+}
+
+# Quieten the noise that isn't your API.
+on response where content_type contains "javascript" { tag "static" }
+on response where content_type contains "css"        { tag "static" }
+on response where content_type contains "image"      { tag "static" }

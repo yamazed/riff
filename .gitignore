@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+.pytest_cache/
+.venv/
+venv/
+
+# Build output — riff.exe is published as a release asset, not committed
+build/
+dist/
+*.spec
+*.exe
+
+# Video renders and their intermediates. These are large binaries; they belong
+# on a release or a video host, not in git history.
+tutorial/video-build/
+tutorial/*.mp4
+tutorial/narration/
+tutorial/voice-samples/
+docs/*.webm
+*.poster.jpg
+
+# Generated page (rebuilt from walkthrough.template.html by tutorial/build.py).
+# tutorial/riff-promo.html is hand-written and IS committed.
+tutorial/riff-walkthrough.html
+
+# Local state
+.riff/
+ui-url.txt
+*.jsonl
+
+# Editors / OS
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
+.DS_Store

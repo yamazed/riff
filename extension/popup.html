@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header>
+    <span class="mark"></span>
+    <strong>riff</strong>
+    <span class="grow"></span>
+    <label class="switch">
+      <input type="checkbox" id="enabled">
+      <span class="slider"></span>
+    </label>
+  </header>
+
+  <p class="state" id="state">Chrome is using its normal connection.</p>
+
+  <div class="grid">
+    <label for="host">Proxy host</label>
+    <input id="host" type="text" spellcheck="false">
+    <label for="port">Proxy port</label>
+    <input id="port" type="number" min="1" max="65535">
+    <label for="uiPort">UI port</label>
+    <input id="uiPort" type="number" min="1" max="65535">
+    <label for="bypass">Bypass</label>
+    <input id="bypass" type="text" spellcheck="false" placeholder="corp.example.com, 10.*">
+  </div>
+
+  <label class="check">
+    <input type="checkbox" id="captureLocalhost">
+    Capture localhost traffic too
+  </label>
+
+  <p class="warn" id="warn" hidden></p>
+
+  <footer>
+    <button id="open-ui">Open riff UI</button>
+    <span class="grow"></span>
+    <span class="hint" id="hint"></span>
+  </footer>
+
+  <script src="popup.js"></script>
+</body>
+</html>

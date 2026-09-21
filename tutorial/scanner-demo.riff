@@ -1,0 +1,8 @@
+# Rules for the scanner tour. The demo target is a small, deliberately
+# vulnerable app the build script starts on loopback, so the recording is
+# deterministic and needs no network. No rewriting here: we want the real,
+# unsafe responses to reach the scanner. Just tag the demo traffic.
+
+on request where host == "127.0.0.1" {
+    tag "demo-shop"
+}

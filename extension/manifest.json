@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "riff proxy switch",
+  "version": "0.1.0",
+  "description": "Route this browser's traffic through a local riff proxy, and jump to the riff UI.",
+  "permissions": ["proxy", "storage"],
+  "host_permissions": ["http://127.0.0.1/*", "http://localhost/*"],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "riff proxy switch"
+  },
+  "background": {
+    "service_worker": "background.js"
+  }
+}

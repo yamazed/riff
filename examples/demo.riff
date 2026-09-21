@@ -1,0 +1,47 @@
+# The rules used for riff's own screenshots and demos, against `demo.app`.
+#
+#   python -m demo.app --port 8123
+#   riff run -p 8888 --ui-port 8899 -s examples/demo.riff
+#   python -m demo.traffic
+#
+# It shows off four things at once: an allowlist, a mocked endpoint, tags
+# that classify traffic, and tags that flag problems.
+
+# ── Only the demo app ──────────────────────────────────────────────────
+decrypt "localhost"
+decrypt "127.0.0.1"
+
+capture "localhost"
+capture "127.0.0.1"
+
+
+# ── Answer a request riff never forwards ───────────────────────────────
+# `respond` short-circuits: the demo app never sees this one, and the flow
+# is tagged so it is obvious in the list which row was invented.
+on request where path == "/v1/flags" {
+    tag "synthetic"
+    respond 200 "{\"new-checkout\": true, \"dark-mode\": true, \"beta-search\": false}" as json
+}
+
+
+# ── Classify the noise ─────────────────────────────────────────────────
+on response where content_type contains "javascript" { tag "static" }
+on response where content_type contains "css"        { tag "static" }
+on response where content_type contains "image"      { tag "static" }
+
+
+# ── Make problems visible ──────────────────────────────────────────────
+on response where status >= 500 {
+    tag "server-error"
+    count "5xx"
+    log "5xx from " + host + path
+}
+
+on response where status == 401 or status == 403 {
+    tag "auth"
+    count "denied"
+}
+
+on response where duration > 2000 {
+    tag "slow"
+}

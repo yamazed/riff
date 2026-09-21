@@ -1,0 +1,1261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Riff Walkthrough</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --bg: #f3f5f9;
+    --panel: #ffffff;
+    --panel-2: #e9edf4;
+    --ink: #141a24;
+    --ink-2: #414b5a;
+    --muted: #6b7686;
+    --line: #d6dce6;
+    --accent: #5b4fe6;
+    --accent-ink: #ffffff;
+    --accent-soft: #ebe8ff;
+    --ok: #1f9d55;
+    --warn: #b7791f;
+    --bad: #cf3d3d;
+    --bezel: #0b0f16;
+    --bezel-line: #1c2431;
+    --term-bg: #0f141c;
+    --term-ink: #d7dde8;
+    --term-dim: #6f7c90;
+    --term-cmd: #9fd6ff;
+    --shadow: 0 18px 50px -20px rgba(20, 26, 36, .35);
+    --radius: 10px;
+    --sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --display: "Bricolage Grotesque", "IBM Plex Sans", "Segoe UI", sans-serif;
+    --mono: "IBM Plex Mono", Consolas, "Cascadia Mono", monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0e1219;
+      --panel: #151b26;
+      --panel-2: #1b2331;
+      --ink: #e6ebf3;
+      --ink-2: #b6c0cf;
+      --muted: #7f8ba0;
+      --line: #263042;
+      --accent: #8f85ff;
+      --accent-ink: #0e1219;
+      --accent-soft: #241f4a;
+      --ok: #3fc27a;
+      --warn: #e0a83a;
+      --bad: #ef5d5d;
+      --bezel: #070a10;
+      --bezel-line: #1c2431;
+      --shadow: 0 18px 50px -20px rgba(0, 0, 0, .8);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0e1219;
+    --panel: #151b26;
+    --panel-2: #1b2331;
+    --ink: #e6ebf3;
+    --ink-2: #b6c0cf;
+    --muted: #7f8ba0;
+    --line: #263042;
+    --accent: #8f85ff;
+    --accent-ink: #0e1219;
+    --accent-soft: #241f4a;
+    --ok: #3fc27a;
+    --warn: #e0a83a;
+    --bad: #ef5d5d;
+    --bezel: #070a10;
+    --bezel-line: #1c2431;
+    --shadow: 0 18px 50px -20px rgba(0, 0, 0, .8);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent); }
+  code, kbd, pre { font-family: var(--mono); }
+  code { font-size: .92em; background: var(--panel-2); padding: .1em .4em; border-radius: 4px; }
+  kbd {
+    font-size: .8em; border: 1px solid var(--line); border-bottom-width: 2px;
+    border-radius: 4px; padding: 0 .4em; background: var(--panel);
+  }
+  h1, h2, h3 { font-family: var(--display); text-wrap: balance; margin: 0; letter-spacing: -.01em; }
+  .eyebrow {
+    font-size: .74rem; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); font-weight: 600;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 24px; }
+  .sr { position: absolute; left: -9999px; }
+
+  /* ---------- masthead ---------- */
+  .mast { padding: 40px 0 22px; display: grid; grid-template-columns: 1fr auto; gap: 24px; align-items: end; }
+  .mast h1 { font-size: clamp(2rem, 4vw, 3rem); font-weight: 700; line-height: 1.05; }
+  .mast h1 .r { color: var(--accent); }
+  .mast p { margin: 10px 0 0; color: var(--ink-2); max-width: 60ch; }
+  .meta { display: flex; gap: 18px; flex-wrap: wrap; color: var(--muted); font-size: .9rem; font-variant-numeric: tabular-nums; }
+  .meta b { color: var(--ink); font-weight: 600; }
+
+  /* ---------- player ---------- */
+  .player {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow);
+    display: grid; grid-template-columns: minmax(0, 1fr) 360px; overflow: hidden;
+  }
+  @media (max-width: 900px) { .player { grid-template-columns: 1fr; } }
+
+  .stage {
+    background: var(--bezel); border-right: 1px solid var(--bezel-line); position: relative;
+    display: flex; flex-direction: column;
+  }
+  @media (max-width: 900px) { .stage { border-right: 0; border-bottom: 1px solid var(--bezel-line); } }
+
+  /* Theater: the screen takes the whole page width, narration drops underneath. */
+  body.theater .wrap { max-width: 96vw; }
+  body.theater .player { grid-template-columns: 1fr; }
+  body.theater .stage { border-right: 0; border-bottom: 1px solid var(--bezel-line); }
+  body.theater .narr { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px 28px; min-height: 0; }
+  body.theater .narr .part, body.theater .narr h2 { grid-column: 1 / -1; }
+  body.theater .narr .nav { grid-column: 1 / -1; margin-top: 6px; }
+  /* Keep the theater screen inside the viewport: cap its width so its 18:11 height
+     fits the height left after the masthead and controls, then centre it. Without
+     this the screen is 96vw tall-and-wide and overflows on a large monitor. */
+  body.theater .stage { align-items: center; }
+  body.theater .screen { width: min(100%, calc((100vh - 300px) * 18 / 11)); margin: 0 auto; }
+  body.theater .screen.is-video { width: min(100%, calc((100vh - 300px) * 16 / 9)); }
+  /* Fullscreen: only the stage, centred, as large as the display allows. */
+  .stage:fullscreen { background: var(--bezel); border: 0; justify-content: center; }
+  .stage:fullscreen .screen { width: min(100vw, calc((100vh - 64px) * 18 / 11)); margin: 0 auto; }
+  .stage:fullscreen .screen.is-video { width: min(100vw, calc((100vh - 64px) * 16 / 9)); }
+  .stage:fullscreen .scrub { flex: none; }
+  .btn[aria-pressed="true"].view { border-color: var(--accent); color: var(--accent); }
+  .screen {
+    aspect-ratio: 18 / 11; width: 100%; position: relative; overflow: hidden; background: var(--bezel);
+  }
+  /* Screenshots are 18:11; the embedded videos are 16:9. On a video step the box takes the video's
+     ratio so it fills top-to-bottom instead of sitting letterboxed inside the taller image box. */
+  .screen.is-video { aspect-ratio: 16 / 9; }
+  .screen img {
+    position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: top left; display: block;
+  }
+  .screen img[hidden] { display: none; }
+  .screen video { position: absolute; inset: 0; width: 100%; height: 100%; background: #000; object-fit: contain; display: block; }
+  .screen video[hidden] { display: none; }
+  .screen .fade { transition: opacity .25s ease; }
+  @media (prefers-reduced-motion: reduce) { .screen .fade { transition: none; } }
+
+  /* terminal pane rendered for install steps */
+  .term {
+    position: absolute; inset: 0; padding: 28px 32px; color: var(--term-ink); background:
+      radial-gradient(120% 90% at 50% 0%, #131a26 0%, var(--term-bg) 60%);
+    font-family: var(--mono); font-size: clamp(11px, 1.35vw, 15px); line-height: 1.7; overflow: auto;
+  }
+  .term[hidden] { display: none; }
+  .term .bar { display: flex; gap: 8px; align-items: center; color: var(--term-dim); font-size: .85em; margin-bottom: 18px; }
+  .term .bar .dot { width: 10px; height: 10px; border-radius: 50%; background: #2a3444; }
+  .term .bar .title { margin-left: 8px; }
+  .term .p { color: var(--term-dim); user-select: none; }
+  .term .c { color: var(--term-cmd); font-weight: 500; }
+  .term .o { color: var(--term-ink); white-space: pre-wrap; }
+  .term .ok { color: #3fc27a; }
+  .term .warn { color: #e0a83a; }
+  .term .dim { color: var(--term-dim); }
+  .term .note { margin-top: 18px; color: var(--term-dim); font-family: var(--sans); font-size: .95em; }
+  .term pre { margin: 0; font: inherit; white-space: pre-wrap; }
+
+  /* callout ring on screenshots */
+  .ring {
+    position: absolute; border: 2px solid var(--accent); border-radius: 8px; pointer-events: none;
+    box-shadow: 0 0 0 4px rgba(143, 133, 255, .18), 0 0 0 9999px rgba(7, 10, 16, .22);
+  }
+  .ring[hidden] { display: none; }
+
+  .scrub { display: flex; flex-wrap: wrap; gap: 12px 14px; align-items: center; padding: 12px 16px 14px; background: #0d1219; border-top: 1px solid var(--bezel-line); }
+  .scrub .track { flex: 1 1 140px; }
+  /* Keep the two screen-size buttons together and to the right, so a narrow bar wraps them as one
+     unit instead of stranding Fullscreen alone on its own line. */
+  .scrub .views { display: flex; gap: 10px; margin-left: auto; }
+  @media (max-width: 620px) { .scrub .views { margin-left: 0; } }
+  .btn {
+    appearance: none; border: 1px solid #263042; background: #151b26; color: #e6ebf3; border-radius: 8px;
+    padding: 7px 12px; font: 500 .9rem var(--sans); cursor: pointer; display: inline-flex; gap: 8px; align-items: center;
+  }
+  .btn:hover { background: #1b2331; }
+  .btn:focus-visible, .chap:focus-visible, .tick:focus-visible, .toc a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .btn.play { background: var(--accent); color: var(--accent-ink); border-color: transparent; min-width: 92px; justify-content: center; }
+  .btn.play:hover { filter: brightness(1.08); }
+  .btn svg { width: 14px; height: 14px; fill: currentColor; }
+  .track { position: relative; height: 26px; display: flex; align-items: center; }
+  .track .rail { position: absolute; left: 0; right: 0; height: 4px; background: #263042; border-radius: 2px; }
+  .track .fill { position: absolute; left: 0; height: 4px; background: var(--accent); border-radius: 2px; width: 0; }
+  .ticks { position: absolute; left: 0; right: 0; top: 0; bottom: 0; display: grid; }
+  .tick { appearance: none; background: none; border: 0; padding: 0; cursor: pointer; position: relative; }
+  .tick::after {
+    content: ""; position: absolute; left: 0; top: 50%; width: 2px; height: 10px; transform: translate(-1px, -50%);
+    background: #46536a; border-radius: 1px;
+  }
+  .tick:first-child::after { display: none; }
+  .tick:hover::before {
+    content: attr(data-title); position: absolute; bottom: 24px; left: 0; transform: translateX(-30%);
+    background: #e6ebf3; color: #0e1219; font: 500 .75rem var(--sans); padding: 3px 8px; border-radius: 4px; white-space: nowrap;
+  }
+  .counter { color: #7f8ba0; font: 500 .85rem var(--mono); font-variant-numeric: tabular-nums; }
+
+  /* narration controls + subtitles */
+  .voice { display: flex; gap: 8px; align-items: center; }
+  .voice[hidden] { display: none; }
+  .sel {
+    appearance: none; border: 1px solid #263042; background: #151b26; color: #e6ebf3; border-radius: 8px;
+    padding: 7px 28px 7px 10px; font: 500 .85rem var(--sans); max-width: 200px; text-overflow: ellipsis;
+    background-image: linear-gradient(45deg, transparent 50%, #7f8ba0 50%), linear-gradient(135deg, #7f8ba0 50%, transparent 50%);
+    background-position: calc(100% - 15px) 55%, calc(100% - 10px) 55%; background-size: 5px 5px, 5px 5px; background-repeat: no-repeat;
+  }
+  .sel:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .btn[aria-pressed="false"] .on { display: none; }
+  .btn[aria-pressed="true"] .off { display: none; }
+  .caption { position: absolute; left: 4%; right: 4%; bottom: 6%; text-align: center; pointer-events: none; }
+  .caption[hidden] { display: none; }
+  .caption span {
+    display: inline; background: rgba(7, 10, 16, .84); color: #ffffff; font: 500 clamp(12px, 1.5vw, 18px) / 1.5 var(--sans);
+    padding: .25em .65em; border-radius: 4px; -webkit-box-decoration-break: clone; box-decoration-break: clone;
+  }
+  .nohint { color: #7f8ba0; font-size: .8rem; }
+
+  .narr { padding: 26px 26px 22px; display: flex; flex-direction: column; gap: 14px; min-height: 100%; position: relative; }
+  .narr .part, .narr h2 { max-width: calc(100% - 100px); }
+  .presenter { position: absolute; top: 18px; right: 20px; width: 88px; color: var(--ink); text-align: center; }
+  .presenter-portrait {
+    width: 72px; height: 72px; margin: 0 auto 4px; overflow: hidden; border: 3px solid var(--accent);
+    border-radius: 50%; background: #dce6ed; box-shadow: 0 8px 24px rgba(0, 0, 0, .24);
+  }
+  .presenter svg { display: block; width: 100%; height: 100%; }
+  .presenter-name { font: 700 .82rem var(--display); line-height: 1.1; }
+  .presenter-role { color: var(--muted); font: 500 .65rem var(--sans); }
+  .presenter .mouth-open { display: none; }
+  .presenter.is-speaking .mouth-closed { display: none; }
+  .presenter.is-speaking .mouth-open { display: block; }
+  .narr .part { display: flex; align-items: center; gap: 10px; }
+  .narr .part .pill {
+    font: 600 .72rem var(--sans); text-transform: uppercase; letter-spacing: .1em; padding: 3px 9px;
+    border-radius: 999px; background: var(--accent-soft); color: var(--accent);
+  }
+  .narr h2 { font-size: 1.55rem; font-weight: 700; line-height: 1.15; }
+  .narr .say { color: var(--ink-2); margin: 0; }
+  .narr .do { margin: 4px 0 0; padding: 12px 14px; border-left: 3px solid var(--accent); background: var(--panel-2); border-radius: 0 8px 8px 0; }
+  .narr .do .lbl { display: block; font-size: .72rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); font-weight: 600; margin-bottom: 4px; }
+  .narr .do pre { margin: 0; font-size: .85rem; line-height: 1.6; white-space: pre-wrap; word-break: break-word; }
+  .narr .do p { margin: 0; font-size: .95rem; }
+  .narr .nav { margin-top: auto; display: flex; gap: 8px; padding-top: 10px; }
+  .narr .nav .btn { background: var(--panel-2); color: var(--ink); border-color: var(--line); }
+  .narr .nav .btn:hover { background: var(--accent-soft); }
+  .hint { font-size: .82rem; color: var(--muted); }
+
+  /* ---------- chapters strip ---------- */
+  .chapters { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+  #chapters { margin: 26px 0 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 26px 22px; align-items: start; }
+  .part-group .chapters { grid-template-columns: 1fr; }
+  @media (max-width: 1000px) { #chapters { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 560px) { #chapters { grid-template-columns: 1fr; } }
+  .part-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+  .part-head .pill {
+    font: 600 .72rem var(--sans); text-transform: uppercase; letter-spacing: .1em; padding: 3px 9px;
+    border-radius: 999px; background: var(--accent-soft); color: var(--accent);
+  }
+  .part-title { font-family: var(--display); font-weight: 700; font-size: 1.05rem; }
+  .part-meta { color: var(--muted); font-size: .85rem; font-variant-numeric: tabular-nums; }
+  .part-play {
+    margin-left: auto; appearance: none; border: 1px solid var(--line); background: var(--panel); color: var(--ink);
+    border-radius: 8px; padding: 6px 12px; font: 500 .85rem var(--sans); cursor: pointer;
+  }
+  .part-play:hover { border-color: var(--accent); background: var(--accent-soft); }
+  .part-play:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .tpart { font-size: 1rem; color: var(--accent); margin: 26px 0 -4px; letter-spacing: .02em; }
+  .chap {
+    appearance: none; text-align: left; border: 1px solid var(--line); background: var(--panel); color: var(--ink);
+    border-radius: 8px; padding: 10px 12px; cursor: pointer; font: inherit; display: grid; gap: 2px;
+  }
+  .chap:hover { border-color: var(--accent); }
+  .chap[aria-current="true"] { border-color: var(--accent); background: var(--accent-soft); }
+  .chap .n { font: 500 .72rem var(--mono); color: var(--muted); }
+  .chap .t { font-size: .9rem; font-weight: 500; line-height: 1.25; }
+
+  /* ---------- sections ---------- */
+  section.sec { padding: 56px 0 0; }
+  .sec-head { display: grid; grid-template-columns: 1fr; gap: 6px; margin-bottom: 22px; max-width: 70ch; }
+  .sec-head h2 { font-size: 1.7rem; font-weight: 700; }
+  .sec-head p { margin: 0; color: var(--ink-2); }
+
+  .transcript { display: grid; gap: 14px; }
+  .tline {
+    display: grid; grid-template-columns: 56px 1fr; gap: 18px; padding: 18px 0; border-top: 1px solid var(--line);
+  }
+  .tline .n { font: 500 .85rem var(--mono); color: var(--muted); padding-top: 3px; }
+  .tline h3 { font-size: 1.1rem; font-weight: 700; }
+  .tline p { margin: 6px 0 0; color: var(--ink-2); max-width: 70ch; }
+  .tline pre { margin: 10px 0 0; background: var(--panel-2); border-radius: 8px; padding: 10px 14px; font-size: .85rem; line-height: 1.6; overflow-x: auto; }
+  .tline .jump { font-size: .85rem; }
+
+  table { border-collapse: collapse; width: 100%; font-size: .95rem; }
+  .tbl { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); }
+  th, td { text-align: left; padding: 10px 14px; border-top: 1px solid var(--line); vertical-align: top; }
+  thead th { border-top: 0; font-size: .74rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); background: var(--panel-2); }
+  td code { white-space: nowrap; }
+
+  .two { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; }
+  .note { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; }
+  .note h3 { font-size: 1.05rem; margin-bottom: 8px; }
+  .note p, .note li { color: var(--ink-2); font-size: .95rem; }
+  .note ul { margin: 6px 0 0; padding-left: 18px; }
+  .note.warn { border-color: color-mix(in srgb, var(--warn) 55%, var(--line)); }
+  .note.warn h3 { color: var(--warn); }
+
+  .script { display: grid; gap: 0; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  .shot { display: grid; grid-template-columns: 150px 1fr; gap: 16px; padding: 14px 18px; border-top: 1px solid var(--line); background: var(--panel); }
+  .shot:first-child { border-top: 0; }
+  .shot .cue { font: 500 .8rem var(--mono); color: var(--muted); }
+  .shot .cue b { display: block; color: var(--ink); font-weight: 600; font-family: var(--sans); font-size: .9rem; margin-bottom: 3px; }
+  .shot .cue .dur { color: var(--accent); }
+  .shot .vo { color: var(--ink-2); font-size: .95rem; }
+  .shot .vo em { color: var(--muted); font-style: normal; font-size: .85rem; display: block; margin-top: 4px; }
+
+  footer { padding: 48px 0 40px; color: var(--muted); font-size: .85rem; }
+  footer p { margin: 4px 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="mast">
+    <div>
+      <div class="eyebrow">Install and first use, in about twelve minutes</div>
+      <h1><span class="r">riff</span> walkthrough</h1>
+      <p>A guided tour of riff, a scriptable HTTPS interception proxy for API debugging. Press play and the page talks you through each step using your machine's own voice, or step through at your own pace. Each part stands on its own, so play just the one you need. Every screen is a real capture of the tool.</p>
+    </div>
+    <div class="meta">
+      <span><b id="metaSteps">0</b> steps</span>
+      <span><b>8</b> parts</span>
+      <span>proxy <b>127.0.0.1:8888</b></span>
+      <span>UI <b>localhost:8899</b></span>
+    </div>
+  </header>
+
+  <div class="player" id="player">
+    <div class="stage">
+      <div class="screen" id="screen">
+        <img id="shotA" class="fade" alt="">
+        <img id="shotB" class="fade" alt="" hidden>
+        <video id="vid" controls playsinline preload="metadata" hidden></video>
+        <div class="term" id="term" hidden></div>
+        <div class="ring" id="ring" hidden></div>
+        <div class="caption" id="caption" hidden></div>
+      </div>
+      <div class="scrub">
+        <button class="btn play" id="playBtn" aria-pressed="false">
+          <svg viewBox="0 0 16 16" id="iconPlay"><path d="M3 2l11 6-11 6z"/></svg>
+          <svg viewBox="0 0 16 16" id="iconPause" hidden><path d="M3 2h4v12H3zM9 2h4v12H9z"/></svg>
+          <span id="playLbl">Play</span>
+        </button>
+        <div class="track" id="track">
+          <div class="rail"></div>
+          <div class="fill" id="fill"></div>
+          <div class="ticks" id="ticks"></div>
+        </div>
+        <div class="counter"><span id="cur">1</span> / <span id="tot">0</span></div>
+        <div class="voice" id="voiceCtl">
+          <button class="btn" id="voiceBtn" aria-pressed="true" title="Turn spoken narration on or off">
+            <svg viewBox="0 0 16 16" class="on"><path d="M2 6h3l4-3v10l-4-3H2z"/><path d="M11 5a3.5 3.5 0 010 6M12.5 3a6 6 0 010 10" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>
+            <svg viewBox="0 0 16 16" class="off"><path d="M2 6h3l4-3v10l-4-3H2z"/><path d="M11 6l4 4M15 6l-4 4" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>
+            <span id="voiceLbl">Voice on</span>
+          </button>
+          <select class="sel" id="voiceSel" aria-label="Narration voice"><option>Default voice</option></select>
+          <select class="sel" id="rateSel" aria-label="Narration speed">
+            <option value="0.9">0.9×</option><option value="1" selected>1×</option><option value="1.15">1.15×</option><option value="1.3">1.3×</option>
+          </select>
+        </div>
+        <span class="nohint" id="noVoice" hidden>Spoken narration needs Edge or Chrome.</span>
+        <div class="views">
+          <button class="btn view" id="theaterBtn" aria-pressed="false" title="Bigger screen: use the whole page width (t)">⤢ Theater</button>
+          <button class="btn view" id="fullBtn" title="Only the screen, on the whole display (f)">⛶ Fullscreen</button>
+        </div>
+      </div>
+    </div>
+    <aside class="narr" id="narr" aria-live="polite">
+      <div class="presenter" id="presenter" aria-label="Presenter">
+        <div class="presenter-portrait">
+          <svg viewBox="0 0 120 120" role="img" aria-label="Illustrated male presenter">
+            <rect width="120" height="120" fill="#dce6ed"/>
+            <path d="M12 120c3-25 21-39 48-39s45 14 48 39" fill="#28506b"/>
+            <path d="M43 76h34v26H43z" fill="#d29a78"/>
+            <ellipse cx="60" cy="53" rx="31" ry="37" fill="#e4b28e"/>
+            <path d="M29 51c-1-28 13-43 34-43 22 0 34 17 30 42-8-5-15-13-18-22-11 12-26 18-46 18z" fill="#29343f"/>
+            <path d="M29 46c-5 2-6 9-3 15 2 5 6 7 9 5M91 46c5 2 6 9 3 15-2 5-6 7-9 5" fill="#e4b28e" stroke="#c98d6d" stroke-width="2"/>
+            <path d="M43 49q7-5 14 0M64 49q7-5 14 0" fill="none" stroke="#29343f" stroke-width="2.5" stroke-linecap="round"/>
+            <circle cx="50" cy="53" r="2" fill="#263642"/><circle cx="71" cy="53" r="2" fill="#263642"/>
+            <path d="M60 54l-3 12 7 1" fill="none" stroke="#c98d6d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path class="mouth-closed" d="M50 73q10 7 20 0" fill="none" stroke="#8e4e4d" stroke-width="2.5" stroke-linecap="round"/>
+            <ellipse class="mouth-open" cx="60" cy="75" rx="9" ry="6" fill="#713d43"/>
+            <path d="M37 91l23 18 23-18 11 29H26z" fill="#f4f6f8"/>
+            <path d="M53 103l7 6 7-6 4 17H49z" fill="#6f63d9"/>
+          </svg>
+        </div>
+        <div class="presenter-name">Presenter</div>
+        <div class="presenter-role">Andrew voice</div>
+      </div>
+      <div class="part"><span class="pill" id="partPill">Part 1</span><span class="eyebrow" id="partName">Install</span></div>
+      <h2 id="title"></h2>
+      <p class="say" id="say"></p>
+      <div class="do" id="do"></div>
+      <div class="nav">
+        <button class="btn" id="prevBtn">← Back</button>
+        <button class="btn" id="nextBtn">Next →</button>
+        <span class="hint" style="margin-left:auto;align-self:center"><kbd>←</kbd> <kbd>→</kbd> <kbd>space</kbd> <kbd>t</kbd> <kbd>f</kbd></span>
+      </div>
+    </aside>
+  </div>
+
+  <nav class="chapters" id="chapters" aria-label="Chapters"></nav>
+
+  <section class="sec">
+    <div class="sec-head">
+      <div class="eyebrow">Transcript</div>
+      <h2>Every step, written out</h2>
+      <p>The same walkthrough as a page you can read, search and paste from. Click a step number to load it in the player above.</p>
+    </div>
+    <div class="transcript" id="transcript"></div>
+  </section>
+
+  <section class="sec">
+    <div class="sec-head">
+      <div class="eyebrow">Beyond the browser</div>
+      <h2>Pointing an API client at riff</h2>
+      <p>riff is one proxy serving every client at once. Anything told to use <code>127.0.0.1:8888</code> shows up in the same list, and a client configured directly cannot be overridden by Zscaler.</p>
+    </div>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>Client</th><th>How to route it through riff</th><th>Trust store</th></tr></thead>
+        <tbody>
+          <tr><td>Browser</td><td><code>riff-browser.cmd https://…</code> opens an isolated Chrome or Edge window</td><td>Windows user store, via <code>riff.exe ca install</code></td></tr>
+          <tr><td>.NET</td><td><code>new WebProxy("http://127.0.0.1:8888")</code>, or <code>HTTP_PROXY</code> / <code>HTTPS_PROXY</code></td><td>Windows user store</td></tr>
+          <tr><td>curl</td><td><code>curl.exe -x http://127.0.0.1:8888 https://…</code></td><td>Windows user store</td></tr>
+          <tr><td>Desktop API clients</td><td>Settings, then Proxy, then custom: <code>127.0.0.1</code> port <code>8888</code></td><td>Windows user store</td></tr>
+          <tr><td>Python</td><td><code>HTTP_PROXY</code> / <code>HTTPS_PROXY</code></td><td><code>setx REQUESTS_CA_BUNDLE "%USERPROFILE%\.riff\riff-ca.crt"</code></td></tr>
+          <tr><td>Node</td><td><code>HTTP_PROXY</code>, some libraries need an explicit agent</td><td><code>setx NODE_EXTRA_CA_CERTS "%USERPROFILE%\.riff\riff-ca.crt"</code></td></tr>
+          <tr><td>Java</td><td><code>-Dhttps.proxyHost=127.0.0.1 -Dhttps.proxyPort=8888</code></td><td><code>keytool -importcert</code> into <code>cacerts</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="sec-head">
+      <div class="eyebrow">Good to know</div>
+      <h2>Before you share this with the team</h2>
+    </div>
+    <div class="two">
+      <div class="note warn">
+        <h3>Wait for security approval</h3>
+        <p>riff intercepts TLS the way every interception proxy does: it generates a certificate authority on your machine and asks you to trust it. That is a real change to your trust store \u2014 read <code>riff ca uninstall</code> before you start, so you know how to undo it.</p>
+      </div>
+      <div class="note">
+        <h3>Undo everything</h3>
+        <pre style="margin:0;font-size:.85rem;line-height:1.7">riff.exe proxy off
+riff.exe ca uninstall
+rmdir /s "%USERPROFILE%\.riff"</pre>
+        <p style="margin-top:8px">Nothing is installed system-wide and no admin rights were used, so removal is just these three lines.</p>
+      </div>
+      <div class="note">
+        <h3>The private key never moves</h3>
+        <p>Each person gets their own CA under <code>%USERPROFILE%\.riff</code>. Never put <code>RIFF_HOME</code> somewhere other people can read: a shared key would let any of them impersonate any HTTPS site to everyone who trusts it.</p>
+      </div>
+      <div class="note">
+        <h3>What riff will not do</h3>
+        <ul>
+          <li>HTTP/2 and HTTP/3 are not supported. riff offers only <code>http/1.1</code>, so clients negotiate down.</li>
+          <li>Hosts outside your <code>decrypt</code> list are tunnelled opaquely. Sign-in traffic stays unreadable by design.</li>
+          <li>Rules are a sandbox: no shell, no imports, no network, no file access beyond an explicit <code>save</code>.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="sec-head">
+      <div class="eyebrow">Record it as a real video</div>
+      <h2>Shot list and voice-over</h2>
+      <p>This is the exact script the page reads aloud. If you want an actual screen recording, open riff with <code>examples\starter.riff</code>, record with the Windows Snipping Tool's screen recorder or Xbox Game Bar (<kbd>Win</kbd>+<kbd>G</kbd>), and either read the lines yourself or let the page's narration play while you record. Total run time is about twelve minutes.</p>
+    </div>
+    <div class="script" id="script"></div>
+  </section>
+
+  <footer>
+    <p>riff 0.1.0. Docs and the rule language reference: <code>README.md</code> in the riff folder. Security write-up: <code>docs\SECURITY-REVIEW.md</code>.</p>
+    <p>Screens captured from the live UI with <code>packaging\shoot-docs.py</code> and <code>packaging\shoot-extension.py</code>. Install screens are rendered command listings, not recordings. The loaded-extension card was captured in Edge, because Chrome no longer lets automation load an unpacked extension; the popup is the extension's own page rendered directly.</p>
+  </footer>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var IMAGES = {
+    traffic: "{{IMG:traffic}}",
+    filter: "{{IMG:filter}}",
+    request: "{{IMG:detail-request}}",
+    response: "{{IMG:detail-response}}",
+    timing: "{{IMG:detail-timing}}",
+    raw: "{{IMG:detail-raw}}",
+    rules: "{{IMG:rules}}",
+    rulesError: "{{IMG:rules-error}}",
+    mocked: "{{IMG:detail-mocked}}",
+    compose: "{{IMG:compose}}",
+    setup: "{{IMG:setup}}",
+    light: "{{IMG:traffic-light}}",
+    extDev: "{{IMG:ext-developer-mode}}",
+    extLoaded: "{{IMG:ext-loaded}}",
+    extPopup: "{{IMG:ext-popup}}",
+    extTraffic: "{{IMG:ext-traffic}}",
+    export: "{{IMG:export}}",
+    import: "{{IMG:import}}",
+    compose: "{{IMG:compose}}",
+    composeEnv: "{{IMG:compose-env}}",
+    findings: "{{IMG:findings}}"
+  };
+  var VIDEOS = { composeTour: "{{VIDEO:riff-compose-tour}}", scannerTour: "{{VIDEO:riff-scanner-tour}}" };
+  var RYAN_AUDIO = {{RYAN_AUDIO}};
+  var MOUTH = {{MOUTH}};   // per-track open-mouth ranges [s0,e0,s1,e1,...], from build.py
+
+  function term(title, lines, note) {
+    var h = '<div class="bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="title">' + title + '</span></div><pre>';
+    lines.forEach(function (l) {
+      if (l[0] === '$') h += '<span class="p">C:\\riff&gt; </span><span class="c">' + l.slice(1) + '</span>\n';
+      else if (l[0] === '#') h += '<span class="dim">' + l.slice(1) + '</span>\n';
+      else if (l[0] === '+') h += '<span class="ok">' + l.slice(1) + '</span>\n';
+      else if (l[0] === '!') h += '<span class="warn">' + l.slice(1) + '</span>\n';
+      else h += '<span class="o">' + l + '</span>\n';
+    });
+    h += '</pre>';
+    if (note) h += '<div class="note">' + note + '</div>';
+    return h;
+  }
+
+  // ring: [left%, top%, width%, height%] on the 2880x1760 capture
+  var STEPS = [
+    { part: 1, title: 'Copy riff to your own machine',
+      say: 'riff is a single file. Download it, put it somewhere on your own PC, and run it. No admin rights, nothing installed system-wide.',
+      dur: 60, vo: 'Download riff dot exe from the releases page, and put it in a folder with the install-local script. Double-click install-local. It copies riff into your local app data folder, drops a starter rules file next to it, and offers to run setup. If you would rather do it by hand, copying the folder anywhere works just as well.',
+      term: term('install-local.cmd', [
+        '#  the folder you unpacked the release into',
+        '',
+        '  Installing riff',
+        '  from  .\\riff-0.1.0\\',
+        '  to    %LOCALAPPDATA%\\riff',
+        '',
+        '+  copied riff.exe',
+        '+  copied starter rules.riff',
+        '',
+        '  Next, from %LOCALAPPDATA%\\riff:',
+        '',
+        '    riff.exe setup          creates your own certificate authority,',
+        '                            offers to trust it, and points Windows at riff',
+        '    riff.exe run -s rules.riff',
+        '',
+        '  Run setup now? [Y/N]'
+      ], 'Or copy the folder yourself anywhere you like. Upgrades keep any <code>rules.riff</code> you have edited.'),
+      do: { lbl: 'Do this', code: 'Download the release  \u2192  install-local.cmd' } },
+
+    { part: 1, title: 'Run first-time setup',
+      say: 'Setup creates a certificate authority that exists only on your machine, asks before trusting it, and offers to point Windows at the proxy. Both changes are reversible and both are your choice.',
+      dur: 60, vo: 'Type riff setup. It generates a root certificate unique to your account and stores it under your profile. It then asks whether to trust that certificate, which is what lets riff show HTTPS bodies. Say yes to that. It also asks whether to point the Windows proxy at riff. If an endpoint agent owns your proxy settings, say no here and use the dedicated browser instead. We will do that in step four.',
+      term: term('riff.exe setup', [
+        '$riff.exe setup',
+        '',
+        '  riff home    C:\\Users\\you\\.riff',
+        '+  created     riff-ca.crt  riff-ca.key   (ACL: you only, pathlen:0)',
+        '  SHA-256      2E:8E:C0:19:50:99:49:82:F1:47:20:C3:5E:8A:F9:D2:96:9C:6D:CD:B7:E4:32:7E:DC:30:3A:79:D2:ED:01:88',
+        '  expires      2029-08-27',
+        '',
+        '!  Trust this CA in your user certificate store? This lets riff show',
+        '!  HTTPS bodies. Never installed to the machine store. Undo with',
+        '!  riff ca uninstall.                                        [Y/N] y',
+        '+  trusted (CurrentUser\\Root)',
+        '',
+        '  Point Windows at 127.0.0.1:8888 now?  Skip this if Zscaler manages',
+        '  your proxy; use riff-browser.cmd instead.                  [Y/N] n',
+        '',
+        '+  setup complete. Next:  riff.exe run -s rules.riff --open'
+      ]),
+      do: { lbl: 'Do this', code: 'cd %LOCALAPPDATA%\\riff\nriff.exe setup' } },
+
+    { part: 1, title: 'Start riff and open the UI',
+      say: 'One command starts the proxy on port 8888 and the UI on port 8899. The UI address carries a one-time token, so the safest way in is to let riff open the browser for you.',
+      dur: 45, vo: 'Run riff with the rules file and the open flag. Your browser opens on the riff window automatically. If you ever lose that tab, open a second Command Prompt and type riff ui open. Leave this console running; Control-C stops riff.',
+      term: term('riff.exe run', [
+        '$riff.exe run -s rules.riff --open',
+        '',
+        '  riff 0.1.0',
+        '  proxy       127.0.0.1:8888',
+        '  UI          http://localhost:8899/?token=cc6Ry1ZHaFV8WYezprm2g-rgZHILXOqd',
+        '  rules       rules.riff   (8 decrypt, 2 passthru, 8 capture, 2 ignore, 6 rules)',
+        '  CA          C:\\Users\\you\\.riff\\riff-ca.crt   trusted',
+        '',
+        '+  opening the UI in your browser',
+        '  press Ctrl-C to stop',
+        '',
+        '#  lost the tab?  from any other console:',
+        '#     riff.exe ui --open'
+      ]),
+      do: { lbl: 'Do this', code: 'riff.exe run -s rules.riff --open' } },
+
+    { part: 1, title: 'Capture a browser without touching Windows',
+      say: 'An endpoint agent like Zscaler can own the system proxy on a managed laptop, and fighting it is not worth your time. Instead, launch a separate browser window wired straight to riff. Only that window is captured.',
+      dur: 45, vo: 'Run riff-browser dot cmd with the site you want to watch. A fresh Chrome or Edge window opens with its own profile and its own proxy setting. Your normal browser is untouched, no system setting changes, and there is nothing to restore when you close it. Browse the site normally and switch back to the riff tab.',
+      term: term('riff-browser.cmd', [
+        '$riff-browser.cmd https://127.0.0.1:8443/',
+        '',
+        '  Launching a separate browser window through riff',
+        '    browser : C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+        '    proxy   : 127.0.0.1:8888',
+        '    profile : C:\\Users\\you\\AppData\\Local\\riff\\browser-profile',
+        '',
+        '  Only this window is captured. Close it when you\'re done.',
+        '  If pages show a certificate warning, run:  riff.exe ca install'
+      ], 'The window is started with <code>--proxy-server</code> and <code>--proxy-bypass-list="&lt;-loopback&gt;"</code>, so local dev servers on <code>localhost</code> are captured too.'),
+      do: { lbl: 'Do this', code: 'riff-browser.cmd https://127.0.0.1:8443/' } },
+
+    { part: 2, title: 'Watch traffic arrive', img: 'traffic',
+      say: 'Every request appears as it happens: method, status, host, path, content type, size and duration. Colour does the first pass for you. Green is fine, amber is a client error, red is a server error.',
+      dur: 40, vo: 'This is the live traffic table. Each row is one request and response. Tags your rules applied show inline next to the path: server-error on the 500, auth on the 403, slow on the search call that took two and a half seconds. The purple synthetic tag means a rule answered that request itself. Recording is on by default; pause it with the button or the space bar.',
+      ring: [38.5, 7.5, 3.5, 1.9],
+      do: { lbl: 'Keyboard', html: '<p><kbd>space</kbd> pause · <kbd>c</kbd> clear · <kbd>j</kbd> <kbd>k</kbd> move</p>' } },
+
+    { part: 2, title: 'Filter with real terms, not a text box', img: 'filter',
+      say: 'Type into the filter bar. Plain text matches the URL. Terms narrow by field, and any term prefixed with an exclamation mark is excluded. Terms combine with AND.',
+      dur: 40, vo: 'Press slash to jump to the filter. Here I typed status colon five x x, and only the 500 remains. The other terms are method, host, path, type, tag and id. Bang static hides everything your rules tagged as static. The host allowlist in your rules file works underneath this: it decides what gets recorded at all, the filter decides what you see right now.',
+      ring: [4.8, 1.2, 44.5, 3.3],
+      do: { lbl: 'Try these', code: 'status:5xx\nmethod:POST host:api\ntag:slow !static' } },
+
+    { part: 2, title: 'Inspect the request', img: 'request',
+      say: 'Click a row and the request tab opens: headers, query string, cookies, and a pretty-printed body. Notice the password field. A redact rule masked it before it was ever stored.',
+      dur: 40, vo: 'Select the POST to session. The lower pane shows the request as it left the client. Headers are grouped, the JSON body is formatted, and the password reads as redacted. That is the shipped rules file at work: authorization headers, API keys and session cookies are masked in the capture buffer, so what you see here is safe to screenshot into a ticket.',
+      ring: [0, 63, 47.5, 4],
+      do: { lbl: 'Rule behind it', code: 'on request {\n    redact header "authorization"\n    redact cookie "session"\n}' } },
+
+    { part: 2, title: 'Inspect the response', img: 'response',
+      say: 'The response tab shows status, headers, Set-Cookie and the decoded body. Gzip, deflate, brotli and zstd are decoded for display without you doing anything.',
+      dur: 30, vo: 'Switch to the response tab. Status and HTTP version at the top, then headers, then the body. Compressed bodies are decoded for display automatically, so a brotli JSON payload reads as JSON.',
+      ring: [5.3, 63.5, 5.5, 3.6] },
+
+    { part: 2, title: 'Timing and what your rules said', img: 'timing',
+      say: 'Timing shows duration and payload sizes, plus anything a rule logged, tagged or counted for this flow. This is where a slow call explains itself.',
+      dur: 25, vo: 'The timing tab. Total duration, request and response sizes, and the trail your rules left: tags applied, log lines written, counters bumped. When something is slow, this tab tells you whether it was the origin or the payload.',
+      ring: [10.8, 63.5, 4.2, 3.6] },
+
+    { part: 2, title: 'The literal bytes', img: 'raw',
+      say: 'When framing is what you are debugging, the raw tab shows the exact bytes on the wire, chunk markers and all.',
+      dur: 20, vo: 'And raw. No decoding, no formatting. This is what actually crossed the socket, which is what you want when a client and server disagree about chunked encoding or a content length.',
+      ring: [15.2, 63.5, 3, 3.6] },
+
+    { part: 2, title: 'Security findings from the traffic', img: 'findings',
+      say: 'The Findings panel is riff\'s built-in security scanner. Passive checks run on their own as traffic is captured and send nothing: missing security headers, weak cookies, credentials over plaintext HTTP, version banners, secrets in a body. The active scan goes further and injects attack payloads, so it is gated on scope: name the hosts you are authorised to test and riff only ever probes those. It turns up reflected XSS, SQL injection, open redirects, path traversal and SSRF, each linked to the flow that proved it.',
+      dur: 55, vo: 'Open Findings. This is the security scanner. The passive half runs by itself as you browse and sends nothing of its own: it just reads the responses riff already captured and flags missing security headers, weak cookies, a credential sent in clear text, a version banner. The active half is different. It sends attack payloads, so it only runs against hosts you put in scope. Type the host you are authorised to test, start the scan, and riff injects into every parameter it captured. Reflected cross-site scripting, SQL injection, open redirects: each finding links straight to the flow that proved it. The same thing runs headless with riff scan and writes a report.',
+      ring: [48.0, 8.8, 51.0, 3.4],
+      do: { lbl: 'Try it', code: 'f  →  type an in-scope host  →  Active scan' } },
+
+    { part: 2, title: 'Watch: the security scanner', video: 'scannerTour', poster: 'findings',
+      say: 'A two-and-a-half-minute recording with its own narration: the passive findings that appear on their own as traffic is captured, then an active scan against a small demo shop that is deliberately full of holes, turning up reflected XSS, SQL injection and an open redirect, each linked to the flow behind it and all inside the scope set on camera.',
+      dur: 24, vo: 'This step is a video, about two and a half minutes, with its own narration. It shows the scanner end to end: the passive findings that appear as traffic is captured, then an active scan against a deliberately vulnerable demo shop that turns up cross-site scripting, SQL injection and an open redirect, always inside the scope set on screen. Press play on the screen. The tour waits while it plays; press Next when you are done.',
+      do: { lbl: 'Watch', code: 'Press play on the screen  →  about 2.5 minutes  →  Next' } },
+
+    { part: 2, title: 'Scope is what makes the active scan safe', img: 'findings',
+      say: 'The passive half is always safe: it only reads what riff already captured. The active half sends real attack payloads, so riff refuses to run it without a scope. You name the hosts you are authorised to test, and every single probe re-checks its target against that list before the socket opens \u2014 not once at the start, but every time. A typo cannot leak a payload onto a host you did not name.',
+      dur: 45, vo: 'It is worth being precise about the active scan, because it sends real attack traffic. riff will not start one without a scope. You type the hosts you are allowed to test, and riff checks every probe against that list before it opens a connection. Not once when the scan starts, but on every request. If a redirect or a typo would send a payload somewhere you did not name, the probe is dropped instead. Out-of-band checks are off unless you ask for them, and so are the slow time-based ones.',
+      ring: [48.0, 8.8, 51.0, 3.4],
+      do: { lbl: 'Note', code: 'No host in scope  \u2192  riff refuses to scan, in the UI and on the command line' } },
+
+    { part: 2, title: 'The same scan, headless', img: 'findings',
+      say: 'Everything the Findings drawer does is available from the command line against an exported capture, so a scan can run in CI or on a colleague\'s machine. It writes JSON for tooling or Markdown grouped by OWASP category with a remediation line per finding.',
+      dur: 38, vo: 'The scanner is not UI only. Export a capture, then run riff scan against it with the hosts you are authorised to test. The same checks run, the same scope rule applies, and you get a report out: JSON if something else is going to read it, or Markdown grouped by OWASP category with a remediation note on each finding. That makes it something you can attach to a ticket, or run in a pipeline.',
+      term: term('riff scan', [
+        '$riff scan capture.riff --host demo.internal --out report.md',
+        '',
+        '  scanning 41 insertion points across 12 flows',
+        '  [high]   xss-reflected      /shop?q=',
+        '  [high]   sqli-error         /item?id=',
+        '  [medium] open-redirect      /go?next=',
+        '',
+        '  3 findings written to report.md'
+      ]),
+      do: { lbl: 'Try it', code: 'riff scan <export> --host <in-scope host> --out report.md' } },
+
+    { part: 3, title: 'Edit rules while riff is running', img: 'rules',
+      say: 'Open Rules to edit the script in place. Save and apply, and the new rules take effect on the very next request. Nothing restarts, nothing is dropped.',
+      dur: 45, vo: 'Press s or click Rules. The editor shows your rules file. A rule has a trigger, on request or on response, an optional where clause, and a block of actions. Change the slow threshold from two seconds to one, hit Save and apply, and the next request is judged by the new rule. Check parses the script without applying it.',
+      ring: [88.5, 0.8, 6.5, 3.8],
+      do: { lbl: 'Rule syntax', code: 'on response where duration > 1000 {\n    tag "slow"\n}' } },
+
+    { part: 3, title: 'A broken script is rejected, not applied', img: 'rulesError',
+      say: 'If the script does not parse, riff refuses it and points at the exact line and column. The running engine keeps the last good version, so a typo never takes your capture down.',
+      dur: 25, vo: 'Here I left the host comparison unfinished. riff says line one, column twenty-six, expected a value, found a brace. The rules that were already running keep running. Fix the line and apply again.',
+      ring: [47.5, 93.3, 22, 3] },
+
+    { part: 3, title: 'Mock a response without a server', img: 'mocked',
+      say: 'A respond rule answers the request itself. The flow is marked synthetic and never reaches the origin. Use it for feature flags, error paths, and endpoints that do not exist yet.',
+      dur: 40, vo: 'Flow three, the flags endpoint, is synthetic. A rule matched the path and responded with a small JSON body and a 200. The origin was never contacted. Change the status to 503 and you have a repeatable outage for testing your retry logic, with no change to the service.',
+      ring: [33, 15.2, 10, 2],
+      do: { lbl: 'Rule behind it', code: 'on request where path starts with "/v1/flags" {\n    respond 200 "{\\"enabled\\": true}" as json\n}' } },
+
+    { part: 4, title: 'Compose: an API client inside riff', img: 'compose',
+      say: 'Compose is a full API client. Build a request by hand, or reopen a captured one with Edit and send. Params and headers are grids, the body is JSON, text or form, and the response appears right underneath with a link to the flow. Save requests into collections and folders: plain JSON files next to your rules, so the whole team gets them. Import a Collection v2.1 file (folders and all) or export one. New to this? tutorial/riff-compose-tour.mp4 walks through every feature.',
+      dur: 60, vo: 'Compose is a small API client inside riff. Build a request by hand, or click Edit and send on any captured row to reopen it here with its real headers and body. Params and headers are grids with a tick box per row. The body is JSON, text or form. Send, and the response appears underneath, with a link to the flow in the traffic list. On the left are collections, with folders inside them: save a request into a folder, drag it to another, fold folders away, filter a big collection. They are plain JSON files next to your rules file, so checking them into a repo gives them to the whole team. Import takes a collection version two file, folders and all, a riff collection or a HAR file, and Export goes the other way. If API clients are new to you, there is a separate narrated tour of Compose next to this walkthrough.',
+      ring: [18.1, 5.7, 16.6, 20.0],
+      do: { lbl: 'Try it', code: 'n  \u2192  fill in a request  \u2192  Save to\u2026  \u2192  name a collection' } },
+
+    { part: 4, title: 'Environments, variables and captures', img: 'composeEnv',
+      say: 'Write {{baseUrl}} or {{token}} anywhere and pick an environment in the drawer head: dev, staging, prod. Shared values are saved next to the rules and are safe to commit. Personal values stay on your machine and win, so tokens never reach the repo. Auth helpers and captures build on them: log in once, capture the token from the response, and every request in the collection can use it.',
+      dur: 50, vo: 'Requests rarely point at one server. Write double curly brace base U R L, or token, anywhere in a request, then pick an environment at the top of the drawer. Shared values, on the left, are saved next to your rules and are safe to commit. Personal values, on the right, live only on your machine and override the shared ones. That is where tokens belong. The Auth tab adds bearer, basic or API key from those variables, and the Capture tab pulls a value out of a response, such as an access token, into your personal values. Log in once, and every other request in the collection can use it.',
+      ring: [59.4, 11.2, 37.8, 11.6],
+      do: { lbl: 'Do this', code: 'Environments  \u2192  New  \u2192  baseUrl (shared), token (personal)' } },
+    { part: 4, title: 'Watch: the Compose tour', video: 'composeTour', poster: 'compose',
+      say: 'A seven-minute recording of Compose with its own narration, made for people new to API clients: building a request and reading the response, Edit & send from a captured row, saving into a collection and folders (drag and drop, fold, filter), environments and personal values, logging in once and capturing the token for the other requests, and collection import and export. Every request in it is answered by a mock rule, so you can follow along offline with tutorial/compose-demo.riff.',
+      dur: 26, vo: 'This step is a video, about seven minutes, with its own narration. It is the Compose tour for anyone new to API clients: build a request, read the response, save it into a collection and folders, set up environments and personal values, log in once and capture the token, then import and export collections. Press play on the screen. The tour waits while it plays; press Next when you are done.',
+      do: { lbl: 'Watch', code: 'Press play on the screen  \u2192  about 7 minutes  \u2192  Next' } },
+
+    { part: 5, title: 'Setup: your certificate and how to remove it', img: 'setup',
+      say: 'The Setup drawer shows the certificate path, its SHA-256 fingerprint and expiry, a download link, and the exact certutil commands to trust and to untrust it.',
+      dur: 30, vo: 'Setup is also where you read your current decrypt policy, which lists exactly which hosts riff will open. Everything else is tunnelled opaquely. If you ever want riff gone, the undo command is right here.',
+      ring: [48, 28.5, 51, 7],
+      do: { lbl: 'Undo later', code: 'riff.exe proxy off\nriff.exe ca uninstall' } },
+
+    { part: 5, title: 'Light theme and shortcuts', img: 'light',
+      say: 'The UI follows your OS theme and the toggle in the top right overrides it. Everything is reachable from the keyboard.',
+      dur: 25, vo: 'Finally, the light theme, for people who prefer it. Slash for filter, j and k to move, space to pause, c to clear, s for rules, n for compose, Escape to close. Deep links work too, so hash flow twelve response opens straight to that response.',
+      ring: [96.3, 0.8, 3.2, 3.8],
+      do: { lbl: 'Deep links', code: '#rules   #compose   #setup\n#flow/12   #flow/12/response' } },
+
+    { part: 5, title: 'Point your own API client at riff',
+      say: 'Nothing here is browser-specific. Any client told to use 127.0.0.1 port 8888 is captured, and several at once land in the same list. Configuring the client directly is more reliable than the system proxy, because Zscaler cannot override it.',
+      dur: 40, vo: 'For your own service, set the proxy in the client. In .NET that is a WebProxy or the HTTP_PROXY environment variables. curl takes dash x. Desktop API clients have a proxy tab. Runtimes with their own trust store, like Java, Node and Python requests, also need the riff certificate: the commands are in the table below the player.',
+      term: term('any client', [
+        '#  .NET',
+        '  var handler = new HttpClientHandler {',
+        '      Proxy = new WebProxy("http://127.0.0.1:8888")',
+        '  };',
+        '',
+        '#  curl  (in PowerShell type curl.exe, plain curl is an alias)',
+        '$curl.exe -x http://127.0.0.1:8888 https://127.0.0.1:8443/v1/users',
+        '',
+        '#  Node / Python  (own trust stores, need the CA once)',
+        '$setx NODE_EXTRA_CA_CERTS "%USERPROFILE%\\.riff\\riff-ca.crt"',
+        '$setx REQUESTS_CA_BUNDLE  "%USERPROFILE%\\.riff\\riff-ca.crt"',
+        '',
+        '+  all of them appear in the same riff list, tagged by client port'
+      ]),
+      do: { lbl: 'Rule of thumb', html: '<p>Trusted in Windows: browsers, .NET, curl. Needs the CA separately: Java, Node, Python.</p>' } },
+
+    { part: 6, title: 'Capture the Chrome you already use', img: 'extDev',
+      say: 'The dedicated window is a separate browser. To capture your everyday Chrome instead, install the small extension that ships with riff. It flips Chrome\'s own proxy setting, which lives inside the browser profile, so Zscaler cannot revert it the way it reverts the Windows proxy.',
+      dur: 45, vo: 'One more way to capture a browser, and on a Zscaler laptop it is the one you will use most. Open a new tab, type chrome colon slash slash extensions, and switch on Developer mode in the top-right corner. Nothing else on the machine changes.',
+      ring: [96.4, 1.6, 3.2, 3.0],
+      do: { lbl: 'Do this', code: 'chrome://extensions  →  Developer mode: on' } },
+
+    { part: 6, title: 'Load the extension folder', img: 'extDev',
+      say: 'Developer mode reveals a Load unpacked button. Point it at the extension folder that sits next to riff.exe. Nothing is downloaded and no admin rights are needed.',
+      dur: 45, vo: 'Click Load unpacked, top left. In the folder picker, choose the extension folder next to riff dot exe, inside the folder you unpacked the release into.',
+      ring: [1.2, 6.8, 9.4, 5.4],
+      do: { lbl: 'Do this', code: 'Load unpacked  →  C:\\code\\riff\\extension' } },
+
+    { part: 6, title: 'The riff proxy switch appears', img: 'extLoaded',
+      say: 'A card named riff proxy switch shows up in the list. Chrome adds a small banner about developer-mode extensions each time it starts; dismiss it, or ask IT to deploy a packed copy so it goes away.',
+      dur: 35, vo: 'The extension is now in the list as riff proxy switch. Chrome will remind you about developer mode extensions when it starts. That banner is the only cost of installing without the web store. This capture is from Edge, which loads the same folder; Chrome looks the same.',
+      ring: [26.0, 14.2, 57.0, 14.4] },
+
+    { part: 6, title: 'Flip the switch', img: 'extPopup',
+      say: 'Click the riff icon in the toolbar, pin it if it is hiding under the puzzle piece, and turn the switch on. The icon shows an on badge and this Chrome now sends everything through riff. Capture localhost traffic too makes your local dev servers visible as well, something a system proxy can never do.',
+      dur: 45, vo: 'Click the riff icon in Chrome\'s toolbar and turn the switch on. Leave the ports alone unless you changed them when starting riff. Tick capture localhost traffic too if you are working on a local dev server. Open riff UI takes you straight to the riff window.',
+      ring: [48.6, 3.4, 8.8, 8.0],
+      do: { lbl: 'Then', code: 'riff icon  →  switch on  →  reload your page' } },
+
+    { part: 6, title: 'Your traffic, in riff', img: 'extTraffic',
+      say: 'Reload the page you are working on and it appears in the list, the same as any other client. Flip the switch off when you are done and Chrome goes back to its normal connection. Nothing on the machine was changed, so there is nothing to undo.',
+      dur: 35, vo: 'Reload the page you are working on. Every request from that Chrome is now in riff, with bodies, timing and your rules applied. When you are finished, click the riff icon and turn the switch off. Chrome is back to normal and nothing else was touched.',
+      ring: [3.4, 0.9, 46.0, 3.4] },
+
+    { part: 7, title: 'Export the flows that matter', img: 'export',
+      say: 'Tick the rows you want with the checkbox at the left, shift-click for a range, or use the header box for everything shown. Export offers two formats: riff\'s own JSON, which is lossless, and HAR, which opens in Chrome DevTools and most other HTTP tools.',
+      dur: 45, vo: 'When you have found the requests that show the problem, tick them. The checkbox at the left of each row, shift-click for a range, or the box in the header for everything the filter shows. Then click Export. riff JSON keeps every header, body, tag and timing exactly. HAR is the format other tools understand: Chrome DevTools and most HTTP tools open it. Nothing ticked means everything shown.',
+      ring: [71.8, 0.8, 5.8, 3.6],
+      do: { lbl: 'Do this', code: 'tick rows  \u2192  Export  \u2192  HAR 1.2' } },
+
+    { part: 7, title: 'Import them anywhere', img: 'import',
+      say: 'Import takes either format, several files at once. Imported rows get fresh numbers and an imported tag, and behave like any other row: inspect, filter with tag:imported, Replay, Edit and send. A colleague can reproduce your problem without your machine.',
+      dur: 40, vo: 'Import reads both formats, several files at once. The rows arrive with fresh numbers and an imported tag, so filtering on tag colon imported shows just them. They behave like any other row. Open one, read the response, replay it, or send it to the composer. That means a colleague can pick up exactly what you saw without touching your machine.',
+      ring: [77.6, 0.8, 4.9, 3.6],
+      do: { lbl: 'Then', code: 'Import  \u2192  choose the file  \u2192  filter  tag:imported' } },
+
+    { part: 7, title: 'Stop, and undo if you want to',
+      say: 'Control-C stops riff. To remove it completely, turn the proxy off, untrust the certificate, and delete your riff folder. No admin rights were used, so none are needed to undo.',
+      dur: 25, vo: 'That is riff. Press Control-C in the console to stop it. If you want it fully gone, proxy off, ca uninstall, and delete the dot riff folder in your profile. The README in the riff folder has the full rule language reference. Thanks for watching.',
+      term: term('cleanup', [
+        '$riff.exe proxy off',
+        '+  Windows proxy restored to its previous value',
+        '$riff.exe ca uninstall',
+        '+  removed "riff Root CA" from CurrentUser\\Root',
+        '$rmdir /s "%USERPROFILE%\\.riff"',
+        '',
+        '#  docs:  README.md  and  docs\\SECURITY-REVIEW.md  in the riff folder'
+      ]),
+      do: { lbl: 'Undo', code: 'riff.exe proxy off\nriff.exe ca uninstall\nrmdir /s "%USERPROFILE%\\.riff"' } }
+  ];
+
+  var PARTS = { 1: 'Install', 2: 'Traffic and inspection', 3: 'Rules and mocks', 4: 'Compose', 5: 'Setup and other clients', 6: 'Chrome extension', 7: 'Share and wrap up' };
+
+  var idx = 0, playing = false, timer = null, startedAt = 0, raf = null;
+  var $ = function (id) { return document.getElementById(id); };
+  var shots = [$('shotA'), $('shotB')], front = 0;
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function esc(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+  /* ---------- spoken narration (browser text-to-speech, runs locally) ---------- */
+  var synth = ('speechSynthesis' in window && 'SpeechSynthesisUtterance' in window) ? window.speechSynthesis : null;
+  var prerecorded = RYAN_AUDIO.length === STEPS.length;
+  var recording = prerecorded ? new Audio() : null;
+  var audioContext = null, audioAnalyser = null, audioSamples = null, mouthRaf = null;
+  var voiceOn = true, voice = null, rate = 1, speaking = false, keep = [];
+  try {
+    voiceOn = localStorage.getItem('riff-tour-voice') !== 'off';
+    rate = parseFloat(localStorage.getItem('riff-tour-rate')) || 1;
+  } catch (e) {}
+
+  function sentences(t) {
+    var m = t.match(/[^.!?]+[.!?]+["']?(\s+|$)|[^.!?]+$/g) || [t];
+    return m.map(function (x) { return x.trim(); }).filter(Boolean);
+  }
+  function englishVoices() {
+    return synth ? synth.getVoices().filter(function (v) { return /^en[-_]/i.test(v.lang) || v.lang === 'en'; }) : [];
+  }
+  function pickVoice() {
+    var vs = englishVoices(); if (!vs.length) return null;
+    var saved = null; try { saved = localStorage.getItem('riff-tour-voice-name'); } catch (e) {}
+    var hit = vs.filter(function (v) { return v.name === saved; })[0]; if (hit) return hit;
+    var prefs = [/Natural/i, /Aria|Jenny|Guy|Andrew|Emma|Brian|Ava/i, /Zira|David|Mark/i, /Google US English/i];
+    for (var i = 0; i < prefs.length; i++) {
+      hit = vs.filter(function (v) { return prefs[i].test(v.name); })[0]; if (hit) return hit;
+    }
+    return vs.filter(function (v) { return v.default; })[0] || vs[0];
+  }
+  function label(v) {
+    return v.name.replace(/^Microsoft /, '').replace(/ Online \(Natural\)/, ' (Natural)').replace(/ - English.*$/, '').replace(/ English \((.*?)\)$/, ' ($1)');
+  }
+  function fillVoices() {
+    if (!synth) return;
+    var vs = englishVoices(); if (!vs.length) return;
+    voice = pickVoice();
+    var sel = $('voiceSel'); sel.innerHTML = '';
+    vs.forEach(function (v) {
+      var o = document.createElement('option'); o.value = v.name; o.textContent = label(v);
+      if (voice && v.name === voice.name) o.selected = true;
+      sel.appendChild(o);
+    });
+  }
+  function stopSpeech() {
+    speaking = false; keep = [];
+    if (mouthRaf) cancelAnimationFrame(mouthRaf);
+    mouthRaf = null;
+    $('presenter').classList.remove('is-speaking');
+    if (recording) {
+      recording.pause();
+      recording.removeAttribute('src');
+      recording.load();
+    }
+    if (synth) synth.cancel();
+    $('caption').hidden = true;
+  }
+  // A MediaElementSource may only analyse same-origin media; on file:// with linked mp3s Chrome would
+  // route the audio through the graph as silence, so there the mouth follows a simple rhythm instead.
+  var canAnalyse = !!window.AudioContext && (location.protocol !== 'file:' || (RYAN_AUDIO[0] || '').indexOf('data:') === 0);
+  function followRhythm() {
+    var tick = 0;
+    function step() {
+      if (!speaking) return;
+      tick += 1;
+      $('presenter').classList.toggle('is-speaking', (tick % 9) < 5 && (tick % 37) !== 0);
+      mouthRaf = requestAnimationFrame(step);
+    }
+    step();
+  }
+  // Drive the mouth from the track's precomputed voiced ranges against the audio's own clock, so it
+  // matches the words on any protocol (file:// included). Ranges are flat pairs [s,e,s,e,...].
+  function followSchedule(ranges) {
+    if (!recording || !ranges || !ranges.length) { followRecordingAmplitude(); return; }
+    function step() {
+      if (!speaking) return;
+      var t = recording.currentTime, open = false;
+      for (var i = 0; i < ranges.length; i += 2) {
+        if (t >= ranges[i] && t < ranges[i + 1]) { open = true; break; }
+        if (ranges[i] > t) break;  // ranges are sorted; nothing further can match yet
+      }
+      $('presenter').classList.toggle('is-speaking', open);
+      mouthRaf = requestAnimationFrame(step);
+    }
+    step();
+  }
+  function followRecordingAmplitude() {
+    if (!recording) return;
+    if (!canAnalyse) { followRhythm(); return; }
+    if (!audioContext) {
+      audioContext = new AudioContext();
+      audioAnalyser = audioContext.createAnalyser();
+      audioAnalyser.fftSize = 256;
+      audioAnalyser.smoothingTimeConstant = .25;
+      audioSamples = new Uint8Array(audioAnalyser.fftSize);
+      var source = audioContext.createMediaElementSource(recording);
+      source.connect(audioAnalyser);
+      audioAnalyser.connect(audioContext.destination);
+    }
+    if (audioContext.state === 'suspended') audioContext.resume();
+    function track() {
+      if (!speaking) return;
+      audioAnalyser.getByteTimeDomainData(audioSamples);
+      var power = 0;
+      for (var i = 0; i < audioSamples.length; i++) {
+        var sample = (audioSamples[i] - 128) / 128;
+        power += sample * sample;
+      }
+      $('presenter').classList.toggle('is-speaking', Math.sqrt(power / audioSamples.length) > .025);
+      mouthRaf = requestAnimationFrame(track);
+    }
+    track();
+  }
+  // Reads one step, sentence by sentence (Chrome cuts long utterances), with subtitles.
+  function speakStep(s, onDone) {
+    stopSpeech();
+    if (prerecorded) {
+      var step = STEPS.indexOf(s);
+      speaking = true;
+      recording.src = RYAN_AUDIO[step];
+      recording.onended = function () {
+        if (!speaking) return;
+        speaking = false;
+        $('presenter').classList.remove('is-speaking');
+        if (onDone) onDone();
+      };
+      recording.onerror = function () {
+        if (!speaking) return;
+        speaking = false;
+        $('presenter').classList.remove('is-speaking');
+        if (onDone) onDone();
+      };
+      recording.play().then(function () { followSchedule(MOUTH[step]); });
+      return;
+    }
+    var parts = sentences(s.vo), n = parts.length, k = 0;
+    speaking = true;
+    $('presenter').classList.add('is-speaking');
+    function go() {
+      if (!speaking) return;
+      if (k >= n) { speaking = false; $('presenter').classList.remove('is-speaking'); $('caption').hidden = true; if (onDone) onDone(); return; }
+      var u = new SpeechSynthesisUtterance(parts[k]);
+      if (voice) { u.voice = voice; u.lang = voice.lang; } else { u.lang = 'en-US'; }
+      u.rate = rate;
+      $('caption').innerHTML = '<span>' + esc(parts[k]) + '</span>'; $('caption').hidden = false;
+      u.onend = function () { if (!speaking) return; k++; setFill(k / n); go(); };
+      u.onerror = function (ev) { if (!speaking) return; if (ev.error === 'interrupted' || ev.error === 'canceled') return; k++; go(); };
+      keep.push(u); // hold a reference or Chrome may GC it mid-speech and never fire onend
+      synth.speak(u);
+    }
+    go();
+  }
+  function narrating() { return !!((prerecorded || synth) && voiceOn); }
+
+  if (synth || prerecorded) {
+    if (synth) {
+      fillVoices();
+      synth.addEventListener('voiceschanged', fillVoices);
+    }
+    $('voiceBtn').setAttribute('aria-pressed', voiceOn ? 'true' : 'false');
+    $('voiceLbl').textContent = voiceOn ? (prerecorded ? 'Andrew voice' : 'Voice on') : 'Voice off';
+    if (prerecorded) {
+      $('voiceSel').hidden = true;
+      $('rateSel').hidden = true;
+    }
+    $('rateSel').value = String(rate);
+    if ($('rateSel').selectedIndex < 0) { $('rateSel').value = '1'; rate = 1; }
+    $('voiceBtn').addEventListener('click', function () {
+      voiceOn = !voiceOn;
+      try { localStorage.setItem('riff-tour-voice', voiceOn ? 'on' : 'off'); } catch (e) {}
+      this.setAttribute('aria-pressed', voiceOn ? 'true' : 'false');
+      $('voiceLbl').textContent = voiceOn ? (prerecorded ? 'Andrew voice' : 'Voice on') : 'Voice off';
+      if (playing) startStep(); else stopSpeech();
+    });
+    $('voiceSel').addEventListener('change', function () {
+      var name = this.value;
+      voice = englishVoices().filter(function (v) { return v.name === name; })[0] || voice;
+      try { localStorage.setItem('riff-tour-voice-name', name); } catch (e) {}
+      if (playing || speaking) speakStep(STEPS[idx], playing ? function () { next(true); } : function () { setFill(0); });
+    });
+    $('rateSel').addEventListener('change', function () {
+      rate = parseFloat(this.value) || 1;
+      try { localStorage.setItem('riff-tour-rate', String(rate)); } catch (e) {}
+      if (playing || speaking) speakStep(STEPS[idx], playing ? function () { next(true); } : function () { setFill(0); });
+    });
+  } else {
+    $('voiceCtl').hidden = true;
+    $('noVoice').hidden = false;
+  }
+
+  function render(i) {
+    stopSpeech();
+    idx = Math.max(0, Math.min(STEPS.length - 1, i));
+    var s = STEPS[idx];
+    $('partPill').textContent = 'Part ' + s.part;
+    $('partName').textContent = PARTS[s.part];
+    $('title').textContent = s.title;
+    $('say').textContent = s.say;
+    var d = $('do');
+    if (s.do) {
+      d.hidden = false;
+      d.innerHTML = '<span class="lbl">' + esc(s.do.lbl) + '</span>' + (s.do.code ? '<pre>' + esc(s.do.code) + '</pre>' : s.do.html);
+    } else { d.hidden = true; }
+
+    var termEl = $('term'), ring = $('ring'), vid = $('vid'), screenEl = $('screen');
+    screenEl.classList.toggle('is-video', !!s.video);   // the box takes the video's 16:9 on a video step
+    if (s.video) {
+      termEl.hidden = true; ring.hidden = true;
+      shots.forEach(function (im) { im.hidden = true; im.style.opacity = '0'; });
+      if (vid.dataset.key !== s.video) {
+        vid.dataset.key = s.video;
+        vid.poster = IMAGES[s.poster] || '';
+        vid.src = VIDEOS[s.video];
+      }
+      vid.hidden = false;
+    } else if (s.img) {
+      if (!vid.hidden) { vid.pause(); vid.hidden = true; }
+      termEl.hidden = true;
+      var back = shots[front], nxt = shots[1 - front];
+      nxt.src = IMAGES[s.img]; nxt.alt = s.title;
+      nxt.hidden = false; nxt.style.opacity = '1';
+      back.style.opacity = '0';
+      setTimeout(function (b) { return function () { if (b !== shots[front]) b.hidden = true; }; }(back), reduced ? 0 : 260);
+      front = 1 - front;
+      if (s.ring) {
+        ring.hidden = false;
+        ring.style.left = s.ring[0] + '%'; ring.style.top = s.ring[1] + '%';
+        ring.style.width = s.ring[2] + '%'; ring.style.height = s.ring[3] + '%';
+      } else ring.hidden = true;
+    } else {
+      if (!vid.hidden) { vid.pause(); vid.hidden = true; }
+      shots.forEach(function (im) { im.hidden = true; im.style.opacity = '0'; });
+      ring.hidden = true;
+      termEl.innerHTML = s.term; termEl.hidden = false;
+    }
+
+    $('cur').textContent = idx + 1;
+    $('prevBtn').disabled = idx === 0;
+    $('nextBtn').textContent = idx === STEPS.length - 1 ? 'Start over' : 'Next →';
+    Array.prototype.forEach.call(document.querySelectorAll('.chap'), function (b, k) {
+      b.setAttribute('aria-current', k === idx ? 'true' : 'false');
+    });
+    setFill(0);
+    try { history.replaceState(null, '', '#step-' + (idx + 1)); } catch (e) {}
+    if (playing) startStep();
+  }
+
+  function setFill(frac) {
+    var per = 100 / STEPS.length;
+    $('fill').style.width = (idx * per + per * frac) + '%';
+  }
+
+  // Silent autoplay: a reading-pace timer, one quarter of the spoken length, never under 6s.
+  function stepDur() { return Math.max(6, Math.round(STEPS[idx].dur * 0.25)) * 1000; }
+
+  function restartTimer() {
+    clearTimeout(timer); if (raf) cancelAnimationFrame(raf);
+    startedAt = performance.now();
+    var dur = stepDur();
+    timer = setTimeout(function () { next(true); }, dur);
+    (function tick() {
+      var f = Math.min(1, (performance.now() - startedAt) / dur);
+      setFill(f);
+      if (f < 1 && playing) raf = requestAnimationFrame(tick);
+    })();
+  }
+
+  // With narration on, the step lasts as long as it takes to say it; otherwise the timer runs.
+  function startStep() {
+    clearTimeout(timer); if (raf) cancelAnimationFrame(raf);
+    if (narrating()) speakStep(STEPS[idx], function () { next(true); });
+    else { stopSpeech(); restartTimer(); }
+  }
+
+  function play() {
+    playing = true;
+    $('playBtn').setAttribute('aria-pressed', 'true');
+    $('iconPlay').hidden = true; $('iconPause').hidden = false; $('playLbl').textContent = 'Pause';
+    startStep();
+  }
+  function pause() {
+    playing = false;
+    stopSpeech();
+    clearTimeout(timer); if (raf) cancelAnimationFrame(raf);
+    $('playBtn').setAttribute('aria-pressed', 'false');
+    $('iconPlay').hidden = false; $('iconPause').hidden = true; $('playLbl').textContent = 'Play';
+    setFill(0);
+  }
+  function next(auto) {
+    if (auto && STEPS[idx].video) { pause(); return; }  // the video has its own narration: wait for the viewer
+    if (idx === STEPS.length - 1) { if (auto) { pause(); return; } render(0); return; }
+    if (auto && scope !== null && STEPS[idx + 1].part !== scope) {
+      // "Play this part" stops at the category boundary instead of rolling on.
+      var done = scope; scope = null;
+      pause();
+      var cap = $('caption');
+      cap.textContent = 'End of Part ' + done + ', ' + PARTS[done] + '. Press play to continue with Part ' + STEPS[idx + 1].part + ', ' + PARTS[STEPS[idx + 1].part] + '.';
+      cap.hidden = false;
+      return;
+    }
+    render(idx + 1);
+  }
+  function prev() { render(idx - 1); }
+
+  $('playBtn').addEventListener('click', function () { if (playing) pause(); else { scope = null; play(); } });
+  // Bigger picture: theater widens the page; fullscreen puts just the stage on the display.
+  function setTheater(on) {
+    document.body.classList.toggle('theater', on);
+    $('theaterBtn').setAttribute('aria-pressed', on ? 'true' : 'false');
+    try { localStorage.setItem('riff-tour-theater', on ? 'on' : 'off'); } catch (e) {}
+  }
+  $('theaterBtn').addEventListener('click', function () { setTheater(!document.body.classList.contains('theater')); });
+  try { if (localStorage.getItem('riff-tour-theater') === 'on') setTheater(true); } catch (e) {}
+  var stageEl = document.querySelector('.stage');
+  function toggleFull() {
+    if (document.fullscreenElement) { document.exitFullscreen(); return; }
+    if (stageEl.requestFullscreen) stageEl.requestFullscreen().catch(function () {});
+  }
+  $('fullBtn').addEventListener('click', toggleFull);
+  document.addEventListener('fullscreenchange', function () {
+    $('fullBtn').textContent = document.fullscreenElement ? '⛶ Exit fullscreen' : '⛶ Fullscreen';
+  });
+  $('nextBtn').addEventListener('click', function () { next(false); });
+  $('prevBtn').addEventListener('click', prev);
+  document.addEventListener('keydown', function (e) {
+    if (e.target && /INPUT|TEXTAREA/.test(e.target.tagName)) return;
+    if (e.key === 'ArrowRight') { next(false); e.preventDefault(); }
+    else if (e.key === 'ArrowLeft') { prev(); e.preventDefault(); }
+    else if (e.key === ' ') { playing ? pause() : play(); e.preventDefault(); }
+    else if (e.key === 't') { setTheater(!document.body.classList.contains('theater')); }
+    else if (e.key === 'f') { toggleFull(); }
+  });
+
+  // ticks
+  var ticks = $('ticks');
+  ticks.style.gridTemplateColumns = 'repeat(' + STEPS.length + ', 1fr)';
+  STEPS.forEach(function (s, k) {
+    var b = document.createElement('button');
+    b.className = 'tick'; b.type = 'button';
+    b.setAttribute('data-title', (k + 1) + '. ' + s.title);
+    b.setAttribute('aria-label', 'Go to step ' + (k + 1) + ': ' + s.title);
+    b.addEventListener('click', function () { render(k); });
+    ticks.appendChild(b);
+  });
+
+  // chapter strip
+  // One group per part, so a reader can learn one category at a time.
+  var ch = $('chapters');
+  var scope = null; // a part number while "Play this part" is running, else null
+  Object.keys(PARTS).forEach(function (p) {
+    var part = Number(p), steps = [];
+    STEPS.forEach(function (s, k) { if (s.part === part) steps.push(k); });
+    if (!steps.length) return;
+    var mins = Math.max(1, Math.round(steps.reduce(function (a, k) { return a + STEPS[k].dur; }, 0) / 60));
+    var group = document.createElement('section');
+    group.className = 'part-group'; group.id = 'part-' + part;
+    var head = document.createElement('div');
+    head.className = 'part-head';
+    head.innerHTML = '<span class="pill">Part ' + part + '</span><span class="part-title">' + esc(PARTS[part]) + '</span>' +
+      '<span class="part-meta">' + steps.length + ' step' + (steps.length === 1 ? '' : 's') + ' · about ' + mins + ' min</span>' +
+      '<button type="button" class="part-play">\u25B6 Play this part</button>';
+    head.querySelector('.part-play').addEventListener('click', function () {
+      scope = part; render(steps[0]); play();
+      $('player').scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
+    });
+    group.appendChild(head);
+    var grid = document.createElement('div');
+    grid.className = 'chapters';
+    steps.forEach(function (k) {
+      var s = STEPS[k];
+      var b = document.createElement('button');
+      b.className = 'chap'; b.type = 'button';
+      b.innerHTML = '<span class="n">' + String(k + 1).padStart(2, '0') + '</span><span class="t">' + esc(s.title) + '</span>';
+      b.addEventListener('click', function () { scope = null; render(k); $('player').scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' }); });
+      grid.appendChild(b);
+    });
+    group.appendChild(grid);
+    ch.appendChild(group);
+  });
+
+  // transcript
+  var tr = $('transcript');
+  var lastPart = 0;
+  STEPS.forEach(function (s, k) {
+    if (s.part !== lastPart) {
+      lastPart = s.part;
+      var h = document.createElement('h3');
+      h.className = 'tpart'; h.id = 'transcript-part-' + s.part;
+      h.textContent = 'Part ' + s.part + ' \u00B7 ' + PARTS[s.part];
+      tr.appendChild(h);
+    }
+    var el = document.createElement('div');
+    el.className = 'tline'; el.id = 't-' + (k + 1);
+    var code = s.do && s.do.code ? '<pre>' + esc(s.do.code) + '</pre>' : '';
+    el.innerHTML = '<div class="n"><a class="jump" href="#step-' + (k + 1) + '">' + String(k + 1).padStart(2, '0') + '</a></div>' +
+      '<div><div class="eyebrow">' + esc(PARTS[s.part]) + '</div><h3>' + esc(s.title) + '</h3><p>' + esc(s.say) + '</p>' + code + '</div>';
+    el.querySelector('.jump').addEventListener('click', function (e) {
+      e.preventDefault(); render(k); $('player').scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
+    });
+    tr.appendChild(el);
+  });
+
+  // shot list
+  var sc = $('script'), total = 0;
+  STEPS.forEach(function (s, k) {
+    total += s.dur;
+    var m = Math.floor(s.dur / 60), sec = s.dur % 60;
+    var el = document.createElement('div');
+    el.className = 'shot';
+    el.innerHTML = '<div class="cue"><b>' + String(k + 1).padStart(2, '0') + ' ' + esc(s.title) + '</b>' +
+      (s.img ? 'screen: ' + esc(s.img) : 'screen: console') + '<br><span class="dur">' + (m ? m + 'm ' : '') + sec + 's</span></div>' +
+      '<div class="vo">' + esc(s.vo) + (s.do && s.do.code ? '<em>On screen: ' + esc(s.do.code.split('\n')[0]) + '</em>' : '') + '</div>';
+    sc.appendChild(el);
+  });
+
+  $('tot').textContent = STEPS.length;
+  $('metaSteps').textContent = STEPS.length;
+
+  // preload screenshots
+  Object.keys(IMAGES).forEach(function (k) { var im = new Image(); im.src = IMAGES[k]; });
+
+  // Stable hooks used by the offline video renderer.
+  $('vid').addEventListener('play', function () { if (playing) pause(); });
+
+  window.__riffTour = {
+    steps: STEPS.map(function (s) { return { title: s.title, voiceover: s.vo }; }),
+    showStep: function (step) { render(step); },
+    showCaption: function (text) {
+      $('caption').textContent = text;
+      $('caption').hidden = !text;
+    }
+  };
+
+  var m = /^#step-(\d+)$/.exec(location.hash);
+  render(m ? parseInt(m[1], 10) - 1 : 0);
+})();
+</script>
+</body>
+</html>

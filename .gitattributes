@@ -1,0 +1,17 @@
+# Normalise to LF in the repository; check out native on Windows.
+* text=auto
+
+# Windows-only scripts stay CRLF so they run when double-clicked.
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# riff rule files are read by riff itself, not the shell.
+*.riff text eol=lf
+
+# Binary assets git must not try to diff or convert.
+*.png binary
+*.jpg binary
+*.mp3 binary
+*.mp4 binary
+*.webm binary
+*.exe binary

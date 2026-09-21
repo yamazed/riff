@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "riff-proxy"
+version = "0.1.0"
+description = "A scriptable HTTP(S) interception proxy with a small rule language and a live web UI."
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+dependencies = [
+    "cryptography>=42",
+]
+
+[project.optional-dependencies]
+# Content-Encoding support beyond gzip/deflate. Without these, br/zstd bodies
+# are passed through untouched instead of being shown decoded.
+codecs = ["brotli>=1.1", "zstandard>=0.22"]
+dev = ["pytest>=8", "brotli>=1.1", "zstandard>=0.22"]
+video = [
+    "edge-tts>=7.2",
+    "imageio-ffmpeg>=0.6",
+    "playwright>=1.55",
+    "truststore>=0.10",
+]
+
+[project.scripts]
+riff = "riff.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["riff*"]
+
+[tool.setuptools.package-data]
+riff = ["ui/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+filterwarnings = ["error::DeprecationWarning:riff.*"]
