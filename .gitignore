@@ -17,14 +17,13 @@ dist/
 # on a release or a video host, not in git history.
 tutorial/video-build/
 tutorial/*.mp4
-tutorial/narration/
 tutorial/voice-samples/
 docs/*.webm
 *.poster.jpg
 
-# Generated page (rebuilt from walkthrough.template.html by tutorial/build.py).
-# tutorial/riff-promo.html is hand-written and IS committed.
-tutorial/riff-walkthrough.html
+# The walkthrough page and its narration ARE committed, so GitHub Pages can
+# serve them; rebuild with tutorial/build.py. The standalone variant is not.
+tutorial/riff-walkthrough-standalone.html
 
 # Local state
 .riff/

@@ -2,11 +2,18 @@
 
     python tutorial/build.py                 # linked: a small page next to its media (default)
     python tutorial/build.py --standalone    # also write riff-walkthrough-standalone.html with everything inlined
+    python tutorial/build.py --video-base URL   # resolve the tour videos to URL/<name>.mp4
 
 The linked page references the screenshots, narration and videos by relative path, so it opens from
 the repo by double-clicking (file:// allows media subresources) and stays under a
 megabyte; the media sits next to it in the repo. The standalone variant
 inlines everything as data URIs for the one case where the HTML travels on its own, e.g. by email.
+
+The tour videos are tens of megabytes and are published as release assets rather than committed, so
+`--video-base` points the page at them instead of at a local file. That is how the GitHub Pages copy
+is built:
+
+    python tutorial/build.py --video-base https://github.com/yamazed/riff/releases/latest/download
 """
 import base64, json, pathlib, re, sys
 
@@ -16,7 +23,11 @@ import lipsync  # noqa: E402
 shots = here.parent / "docs" / "screenshots"
 narration = here / "narration" / "ryan"
 tpl = (here / "walkthrough.template.html").read_text(encoding="utf-8")
-standalone = "--standalone" in sys.argv[1:]
+argv = sys.argv[1:]
+standalone = "--standalone" in argv
+video_base = ""
+if "--video-base" in argv:
+    video_base = argv[argv.index("--video-base") + 1].rstrip("/")
 
 MIME = {".png": "image/png", ".mp4": "video/mp4", ".mp3": "audio/mpeg"}
 
@@ -46,6 +57,10 @@ def render(inline: bool) -> str:
 
     def video(m):
         p = here / f"{m.group(1)}.mp4"
+        # With a base URL the video is fetched from there (a release asset), so the
+        # local file only has to exist when we are inlining or linking to it.
+        if video_base and not inline:
+            return f"{video_base}/{p.name}"
         if not p.exists():
             missing.append(f"{p.name} (build it with tutorial/build_compose_video.py or build_scanner_video.py)")
             return ""
