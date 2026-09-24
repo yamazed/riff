@@ -19,7 +19,9 @@ from __future__ import annotations
 import secrets
 import threading
 import time
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer  # noqa: F401  (type hints)
+
+from ..listen import ExclusiveHTTPServer
 from typing import Any
 
 
@@ -64,7 +66,8 @@ class Collaborator:
 
             do_GET = do_POST = do_PUT = do_HEAD = do_DELETE = do_OPTIONS = _record
 
-        self._server = ThreadingHTTPServer((self.host, self.port), Handler)
+        server_cls = type("CollaboratorServer", (ExclusiveHTTPServer,), {"what": "the collaborator"})
+        self._server = server_cls((self.host, self.port), Handler)
         self._server.daemon_threads = True
         self.port = self._server.server_address[1]
         self._thread = threading.Thread(target=self._server.serve_forever, daemon=True, name="riff-collab")

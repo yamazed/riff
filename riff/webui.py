@@ -24,12 +24,13 @@ import sys
 import threading
 import time
 from dataclasses import dataclass, field
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer  # noqa: F401  (type hints)
 from urllib.parse import parse_qs, urlsplit
 
 from . import replay
 from .ca import expires_at, restrict_to_owner
 from .hub import Hub
+from .listen import ExclusiveHTTPServer
 from .scan import DEFAULT_CHECK_NAMES, ScanConfig, Scanner, ScopeError, host_in_scope, targets_from_details
 from .scan.active import ACTIVE_CHECKS
 from .proxy import Proxy, ProxyError
@@ -136,7 +137,8 @@ class UiServer:
 
     def start(self) -> None:
         handler = _make_handler(self)
-        self._server = ThreadingHTTPServer((self.options.host, self.options.port), handler)
+        server_cls = type("RiffUiServer", (ExclusiveHTTPServer,), {"what": "the web UI"})
+        self._server = server_cls((self.options.host, self.options.port), handler)
         self._server.daemon_threads = True
         self.options.port = self._server.server_address[1]
         self._thread = threading.Thread(target=self._server.serve_forever, daemon=True, name="riff-ui")

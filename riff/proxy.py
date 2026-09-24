@@ -24,6 +24,7 @@ from . import http as H
 from .access import PROXY_AUTH_REALM, AccessPolicy
 from .ca import CertAuthority
 from .flow import DEFAULT_PORTS, Flow, Request, Response
+from .listen import bind_exclusive
 from .script import Engine, Verdict
 from .script.errors import RiffRuntimeError
 
@@ -132,8 +133,8 @@ class Proxy:
 
     def bind(self) -> tuple[str, int]:
         server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        server.bind((self.options.listen_host, self.options.listen_port))
+        # Exclusive: two riffs sharing a port send traffic to an arbitrary one.
+        bind_exclusive(server, (self.options.listen_host, self.options.listen_port), what="the proxy")
         server.listen(self.options.client_backlog)
         server.settimeout(0.5)
         self._server = server

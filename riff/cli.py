@@ -15,6 +15,7 @@ from .access import AccessError, AccessPolicy
 from .ca import CaError, CertAuthority, default_home, expires_at, system_tool
 from .console import ConsoleObserver, MultiObserver, enable_ansi, human_size
 from .hub import Hub
+from .listen import AddressInUse
 from .proxy import Options, Proxy
 from .script import Engine
 from .script.errors import RiffSyntaxError
@@ -561,6 +562,10 @@ def cmd_run(args) -> int:
     try:
         proxy.bind()
     except CaError as exc:
+        print(f"riff: {exc}", file=sys.stderr)
+        return 2
+    except AddressInUse as exc:
+        # Already says which port and what to do; do not wrap it in more prose.
         print(f"riff: {exc}", file=sys.stderr)
         return 2
     except OSError as exc:
