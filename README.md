@@ -45,6 +45,13 @@ traffic going past.
 needed — then run `riff.exe setup`. That one file is the whole tool: the web UI
 is bundled inside it.
 
+> **It is not code-signed yet**, so Windows will say it does not recognise the
+> publisher. Signing is set up through
+> [SignPath Foundation](https://signpath.org/), which signs open-source projects
+> for free and verifies the binary was built from this repository; it applies
+> from the next release. Until then, download only from the releases page above.
+> See [docs/code-signing.md](docs/code-signing.md).
+
 From source:
 
 ```bash

@@ -547,8 +547,8 @@ rmdir /s "%USERPROFILE%\.riff"</pre>
   // ring: [left%, top%, width%, height%] on the 2880x1760 capture
   var STEPS = [
     { part: 1, title: 'Copy riff to your own machine',
-      say: 'riff is a single file. Download it, put it somewhere on your own PC, and run it. No admin rights, nothing installed system-wide.',
-      dur: 60, vo: 'Download riff dot exe from the releases page, and put it in a folder with the install-local script. Double-click install-local. It copies riff into your local app data folder, drops a starter rules file next to it, and offers to run setup. If you would rather do it by hand, copying the folder anywhere works just as well.',
+      say: 'riff is a single file. Download it, put it somewhere on your own PC, and run it. No admin rights, nothing installed system-wide. Windows may warn that it does not recognise the publisher: riff.exe is not code-signed yet. Signing is set up through SignPath Foundation, which signs open-source projects for free and verifies the binary was built from the public repository, and it applies from the release after this one.',
+      dur: 72, vo: 'Download riff dot exe from the releases page, and put it in a folder with the install-local script. Double-click install-local. It copies riff into your local app data folder, drops a starter rules file next to it, and offers to run setup. If you would rather do it by hand, copying the folder anywhere works just as well. One thing to expect: Windows may say it does not recognise the publisher, because this build is not code-signed yet. Signing is set up through SignPath Foundation, which signs open source projects for free and checks that the binary really was built from the public repository. Until that lands, download only from the releases page.',
       term: term('install-local.cmd', [
         '#  the folder you unpacked the release into',
         '',

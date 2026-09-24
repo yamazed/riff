@@ -96,7 +96,7 @@ def test_the_root_carries_the_constraint(constrained):
     cert, _ = constrained.load_or_create()
     extension = cert.extensions.get_extension_for_class(x509.NameConstraints)
     assert extension.critical, "RFC 5280 wants this critical, so it cannot be ignored"
-    assert "example.com" in permitted_patterns(cert)
+    assert any(pattern == "example.com" for pattern in permitted_patterns(cert))
 
 
 def test_an_unconstrained_root_has_no_extension():
@@ -116,7 +116,7 @@ def test_riff_refuses_to_mint_out_of_scope(constrained):
         constrained.context_for("chase.com")
     message = str(info.value)
     assert "name-constrained" in message
-    assert "chase.com" in message
+    assert message.startswith("this CA is name-constrained and cannot sign for chase.com")
     assert "passthru" in message, "the error should say what to do instead"
 
 
