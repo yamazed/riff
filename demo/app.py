@@ -292,6 +292,9 @@ def self_signed(host: str = "localhost") -> tuple[str, str]:
 def _wrap_tls(httpd: socketserver.TCPServer, host: str) -> socketserver.TCPServer:
     cert_path, key_path = self_signed(host)
     context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+    # PROTOCOL_TLS_SERVER on its own still permits TLS 1.0 and 1.1. This app is
+    # insecure on purpose in its *routes*; its transport should not be.
+    context.minimum_version = ssl.TLSVersion.TLSv1_2
     context.load_cert_chain(cert_path, key_path)
     httpd.socket = context.wrap_socket(httpd.socket, server_side=True)
     return httpd
