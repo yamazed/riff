@@ -12,7 +12,7 @@ import webbrowser
 
 from . import __version__
 from .access import AccessError, AccessPolicy
-from .ca import CaError, CertAuthority, default_home, expires_at, system_tool
+from .ca import CaError, CertAuthority, default_home, expires_at, permitted_patterns, system_tool
 from .console import ConsoleObserver, MultiObserver, enable_ansi, human_size
 from .hub import Hub
 from .listen import AddressInUse
@@ -132,6 +132,15 @@ def build_parser() -> argparse.ArgumentParser:
     ca.add_argument("--ca-cert", default="", help="inspect this CA certificate instead")
     ca.add_argument("--ca-key", default="", help="private key matching --ca-cert")
     ca.add_argument("--yes", action="store_true", help="skip the confirmation prompt")
+    ca.add_argument(
+        "--constrain-to",
+        default="",
+        metavar="HOSTS",
+        help=(
+            "comma-separated hosts to lock a NEW CA to (regenerate only). The root is then "
+            "cryptographically unable to sign anything else: e.g. '*.example.com,localhost'"
+        ),
+    )
 
     setup = sub.add_parser(
         "setup", help="one-time per-user bootstrap: make a CA, trust it, point Windows at riff"
@@ -318,6 +327,13 @@ def cmd_ca(args) -> int:
         print(f"fingerprint  SHA-256 {ca.fingerprint()}")
         print(f"expires      {expires_at(cert).date().isoformat()}")
         print(f"leaf cache   {ca.certs_dir}")
+        limits = permitted_patterns(cert)
+        if limits:
+            print(f"constrained  {', '.join(limits)}")
+            print("             this CA cannot sign for any other host")
+        else:
+            print("constrained  no — it can sign for any host")
+            print("             `riff ca regenerate --constrain-to <hosts>` limits that")
         return 0
 
     if args.action == "regenerate":
@@ -329,8 +345,16 @@ def cmd_ca(args) -> int:
         if os.path.isdir(ca.certs_dir):
             for name in os.listdir(ca.certs_dir):
                 os.remove(os.path.join(ca.certs_dir, name))
+        limits = tuple(h.strip() for h in args.constrain_to.split(",") if h.strip())
+        if limits:
+            ca.constrain_to = limits
         ca.load_or_create()
         print(f"New CA written to {ca.ca_cert_path}")
+        if limits:
+            print(f"Name-constrained to: {', '.join(limits)}")
+            print("It physically cannot sign for any other host. Widen it by regenerating again.")
+        else:
+            print("Unconstrained: it can sign for any host. Consider --constrain-to.")
         print("Any previously trusted riff CA is now stale — uninstall it from your trust store.")
         return 0
 

@@ -29,6 +29,93 @@ CLOCK_SKEW = dt.timedelta(days=1)
 _SAFE_NAME = re.compile(r"[^A-Za-z0-9._-]")
 
 
+def parse_constraints(patterns) -> tuple[list, list]:
+    """Turn host patterns into (permitted DNS subtrees, permitted IP subtrees).
+
+    Accepts the same shapes the rule language uses, so a CA can be constrained
+    to match a `decrypt` scope:
+
+        "example.com"    -> the domain and every subdomain
+        "*.example.com"  -> same; the glob is how people write it
+        "localhost"      -> that name and anything under it
+        "127.0.0.1"      -> that single address
+        "10.0.0.0/8"     -> that block
+
+    An RFC 5280 dNSName subtree already covers subdomains, so `*.` is stripped
+    rather than treated as a wildcard.
+    """
+    dns: list[x509.DNSName] = []
+    ips: list[x509.IPAddress] = []
+    for raw in patterns:
+        text = str(raw).strip().lower()
+        if not text:
+            continue
+        if text.startswith("*."):
+            text = text[2:]
+        try:
+            ips.append(x509.IPAddress(ipaddress.ip_network(text, strict=False)))
+            continue
+        except ValueError:
+            pass
+        dns.append(x509.DNSName(text))
+    return dns, ips
+
+
+def name_constraints(patterns) -> x509.NameConstraints | None:
+    """The NameConstraints extension for `patterns`, or None if there are none."""
+    dns, ips = parse_constraints(patterns)
+    if not dns and not ips:
+        return None
+    # Both name types are listed explicitly. A type absent from permittedSubtrees
+    # is unconstrained, so constraining DNS while leaving IP open would let a
+    # leaf for https://1.2.3.4/ through the gap.
+    permitted: list = [*dns, *ips]
+    if dns and not ips:
+        permitted.append(x509.IPAddress(ipaddress.ip_network("127.0.0.1/32")))
+    return x509.NameConstraints(permitted_subtrees=permitted, excluded_subtrees=None)
+
+
+def permitted_patterns(cert: x509.Certificate) -> tuple[str, ...]:
+    """Read a certificate's permitted subtrees back out, for display."""
+    try:
+        value = cert.extensions.get_extension_for_class(x509.NameConstraints).value
+    except x509.ExtensionNotFound:
+        return ()
+    out: list[str] = []
+    for entry in value.permitted_subtrees or ():
+        if isinstance(entry, x509.DNSName):
+            out.append(entry.value)
+        elif isinstance(entry, x509.IPAddress):
+            out.append(str(entry.value))
+    return tuple(out)
+
+
+def host_permitted(host: str, patterns) -> bool:
+    """Would a CA constrained to `patterns` be allowed to sign for `host`?"""
+    if not patterns:
+        return True
+    name = host.strip().lower().rstrip(".")
+    try:
+        address = ipaddress.ip_address(name.strip("[]"))
+    except ValueError:
+        address = None
+    for raw in patterns:
+        text = str(raw).strip().lower()
+        if text.startswith("*."):
+            text = text[2:]
+        if address is not None:
+            try:
+                if address in ipaddress.ip_network(text, strict=False):
+                    return True
+            except ValueError:
+                continue
+        else:
+            # dNSName subtree semantics: the name itself, or anything under it.
+            if name == text or name.endswith("." + text):
+                return True
+    return False
+
+
 def default_home() -> str:
     return os.environ.get("RIFF_HOME") or os.path.join(os.path.expanduser("~"), ".riff")
 
@@ -108,7 +195,12 @@ class CertAuthority:
         organisation: str = "riff proxy",
         cert_path: str = "",
         key_path: str = "",
+        constrain_to=(),
     ):
+        # Host patterns baked into a new root as RFC 5280 name constraints, so
+        # the CA is cryptographically unable to sign anything outside them.
+        # Only applies when a root is generated; an existing one is used as-is.
+        self.constrain_to = tuple(constrain_to or ())
         self.home = home or default_home()
         self.certs_dir = os.path.join(self.home, "certs")
         # A caller-supplied CA (--ca-cert/--ca-key) is used as-is and never
@@ -197,7 +289,7 @@ class CertAuthority:
             ]
         )
         now = _utcnow()
-        cert = (
+        builder = (
             x509.CertificateBuilder()
             .subject_name(name)
             .issuer_name(name)
@@ -221,8 +313,13 @@ class CertAuthority:
                 critical=True,
             )
             .add_extension(x509.SubjectKeyIdentifier.from_public_key(key.public_key()), critical=False)
-            .sign(key, hashes.SHA256())
         )
+        limits = name_constraints(self.constrain_to)
+        if limits is not None:
+            # Critical, as RFC 5280 requires: a validator that cannot enforce the
+            # constraint must reject the certificate rather than ignore it.
+            builder = builder.add_extension(limits, critical=True)
+        cert = builder.sign(key, hashes.SHA256())
         os.makedirs(self.home, exist_ok=True)
         with open(self.ca_cert_path, "wb") as fh:
             fh.write(cert.public_bytes(serialization.Encoding.PEM))
@@ -279,6 +376,18 @@ class CertAuthority:
         ca_cert, ca_key = self.load_or_create()
         if self._leaf_key is None:  # load_or_create() always sets it; guard rather than assert
             raise CaError("the leaf key was not initialised")
+        # A name-constrained CA physically cannot produce a usable certificate
+        # outside its subtrees. Say so here, rather than handing the client a
+        # certificate it will reject for reasons it will not explain well.
+        allowed = permitted_patterns(ca_cert)
+        if allowed and not host_permitted(host, allowed):
+            raise CaError(
+                f"this CA is name-constrained and cannot sign for {host}.\n"
+                f"       It is limited to: {', '.join(allowed)}\n"
+                f"       Either add the host to the constraints and regenerate the CA\n"
+                f"       (riff ca regenerate --constrain-to ...), or let this host tunnel\n"
+                f"       opaquely with a `passthru` rule."
+            )
         leaf_key = self._leaf_key
         now = _utcnow()
 

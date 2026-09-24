@@ -24,6 +24,10 @@ In rough order of how much they would worry me:
    minted for a host the operator did not authorise. The key lives at
    `%USERPROFILE%\.riff\riff-ca.key`, owner-ACLed, and the root is marked
    `pathlen:0` so it cannot sign a sub-CA. Holes in any of that matter most.
+   A CA created with `riff ca regenerate --constrain-to ...` additionally
+   carries a critical RFC 5280 `NameConstraints` extension; **a way to get a
+   validator to accept a leaf outside those subtrees is the single most
+   valuable thing you could report.**
 2. **Anything that lets the active scanner send a probe to a host outside the
    configured scope.** Scope is re-checked before every probe opens a socket;
    a bypass is a serious bug, because it means riff attacked something it was

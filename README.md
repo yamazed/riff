@@ -629,6 +629,7 @@ matters. The short version:
    `%USERPROFILE%\.riff\riff-ca.key` can impersonate every HTTPS site to your
    account. riff generates a **per-machine** CA (never a shipped key), ACLs it
    to you alone, and marks it `pathlen:0` so it cannot sign sub-CAs.
+   **Constrain it and that first sentence stops being true** — see below.
 2. **Trust-store changes are never automatic** and go to the **CurrentUser**
    store only, never LocalMachine. `riff ca uninstall` reverses it.
 3. **Do not bind the proxy publicly** without `--auth` and `--allow-from`.
@@ -642,6 +643,45 @@ The **UI** is loopback-only with a random per-run token, an `HttpOnly` +
 `SameSite=Strict` cookie, a double-submit header on every mutating call, a
 strict CSP with no inline script, and Host-header validation to block DNS
 rebinding. All of it is covered by tests.
+
+### Constrain the CA
+
+The usual objection to any interception proxy is that trusting its CA means
+trusting it for *everything* — your bank included. riff can close that off.
+
+```bash
+riff ca regenerate --constrain-to "*.internal.example.com,localhost"
+```
+
+This bakes an RFC 5280 **`NameConstraints`** extension into the root, marked
+critical. The CA is then *cryptographically incapable* of signing for anything
+outside those subtrees. It is not a riff setting that could be flipped or
+bypassed — it is in the signed certificate, and it is enforced by whatever
+validates the chain: Windows, Chrome, Firefox, OpenSSL.
+
+```
+$ riff ca show
+constrained  internal.example.com, localhost, 127.0.0.1/32
+             this CA cannot sign for any other host
+```
+
+Ask for an out-of-scope host and riff tells you plainly instead of handing your
+client a certificate it will silently reject:
+
+```
+riff: this CA is name-constrained and cannot sign for chase.com.
+      It is limited to: internal.example.com, localhost, 127.0.0.1/32
+```
+
+Worth knowing what this buys you: even if the private key is stolen outright,
+the thief gets a CA that can only impersonate hosts you already nominated. That
+is a materially smaller blast radius than any unconstrained interception CA —
+including the ones shipped by commercial proxies, none of which constrain by
+default.
+
+Constraints are applied when a root is **generated**, so widening or narrowing
+them means regenerating and re-trusting. Existing CAs are unconstrained; run the
+command above to convert.
 
 ---
 
