@@ -6,6 +6,10 @@ language and a live web UI.
 Point a client at riff, write rules in `.riff`, and watch (or rewrite) the API
 traffic going past.
 
+[**Download**](https://github.com/yamazed/riff/releases/latest) ·
+[**Watch the 4-minute film**](https://yamazed.github.io/riff/tutorial/riff-promo.html) ·
+[**Take the walkthrough**](https://yamazed.github.io/riff/tutorial/riff-walkthrough.html)
+
 ![The live traffic table](docs/screenshots/traffic.png)
 
 > **The name.** A riff is a short phrase a musician repeats and improvises
@@ -29,15 +33,17 @@ traffic going past.
 
 ## Quick start
 
-> 🎬 **Walkthroughs.** `tutorial/riff-walkthrough.html` is a narrated,
-> click-through tour of installing and using riff;
-> `docs/riff-extension-install.webm` is a one-minute recording of adding the
-> Chrome extension; `tutorial/riff-compose-tour.mp4` is a narrated tour of
-> Compose. The steps below cover the same ground in text.
+> 🎬 **Watch instead.** The
+> [interactive walkthrough](https://yamazed.github.io/riff/tutorial/riff-walkthrough.html)
+> is a narrated, click-through tour of installing and using riff, in 31 steps.
+> The [4-minute film](https://yamazed.github.io/riff/tutorial/riff-promo.html) is
+> the short version. Both play in the browser. The steps below cover the same
+> ground in text.
 
 **Prebuilt binary:** grab `riff.exe` from the
-[latest release](../../releases/latest) — no Python needed — then run
-`riff.exe setup`.
+[latest release](https://github.com/yamazed/riff/releases/latest) — no Python
+needed — then run `riff.exe setup`. That one file is the whole tool: the web UI
+is bundled inside it.
 
 From source:
 
