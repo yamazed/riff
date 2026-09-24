@@ -1,0 +1,116 @@
+name: Release
+
+# Builds riff.exe, has SignPath sign it, and attaches it to the release.
+#
+# Until the SignPath application is approved this workflow still builds and
+# attaches an UNSIGNED exe — signing is skipped when the secrets are absent, so
+# the job is useful from day one and starts signing the moment it is set up.
+#
+# Required once SignPath approves (Settings > Secrets and variables > Actions):
+#   SIGNPATH_API_TOKEN          a CI User token from SignPath
+#   SIGNPATH_ORGANIZATION_ID    from the SignPath project page
+# and as repository *variables*:
+#   SIGNPATH_PROJECT_SLUG       e.g. riff
+#   SIGNPATH_SIGNING_POLICY     release-signing
+#   SIGNPATH_ARTIFACT_CONFIG    initial
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing release tag to build and attach to"
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write   # to upload the asset onto the release
+      id-token: write   # SignPath verifies the build's provenance with this
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+          pip install pyinstaller
+
+      - name: Build riff.exe
+        run: |
+          pyinstaller --clean --onefile --noconfirm `
+            --name riff `
+            --paths . `
+            --distpath dist `
+            --workpath build `
+            --specpath build `
+            --add-data "riff/ui;riff/ui" `
+            --collect-submodules cryptography `
+            --console `
+            packaging/riff_main.py
+
+      - name: Smoke test
+        run: |
+          .\dist\riff.exe --version
+          .\dist\riff.exe check examples/starter.riff
+
+      - name: Upload unsigned artifact
+        id: upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: riff-unsigned
+          path: dist/riff.exe
+          if-no-files-found: error
+
+      # ---- signing, once SignPath is approved -------------------------------
+      - name: Check whether signing is configured
+        id: signing
+        shell: bash
+        run: |
+          if [ -n "${{ secrets.SIGNPATH_API_TOKEN }}" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::SignPath secrets not set — attaching an unsigned binary."
+          fi
+
+      - name: Sign with SignPath
+        if: steps.signing.outputs.ready == 'true'
+        uses: signpath/github-action-submit-signing-request@v1
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ secrets.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: ${{ vars.SIGNPATH_PROJECT_SLUG }}
+          signing-policy-slug: ${{ vars.SIGNPATH_SIGNING_POLICY }}
+          artifact-configuration-slug: ${{ vars.SIGNPATH_ARTIFACT_CONFIG }}
+          github-artifact-id: ${{ steps.upload.outputs.artifact-id }}
+          wait-for-completion: true
+          output-artifact-directory: signed
+
+      - name: Attach to the release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="${{ github.event.release.tag_name || inputs.tag }}"
+          if [ -f signed/riff.exe ]; then
+            exe=signed/riff.exe
+            echo "attaching the SIGNED binary"
+          else
+            exe=dist/riff.exe
+            echo "attaching the UNSIGNED binary"
+          fi
+          gh release upload "$tag" "$exe#riff.exe" --clobber --repo "${{ github.repository }}"
