@@ -1,0 +1,20 @@
+version: 2
+
+updates:
+  # riff's runtime dependency is `cryptography`, which does the certificate work,
+  # so its advisories matter more than the count of dependencies suggests.
+  - package-ecosystem: pip
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    labels: [dependencies]
+
+  # Keep the CodeQL and checkout actions current; stale action versions are a
+  # common source of CI warnings.
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: monthly
+    labels: [dependencies, ci]
